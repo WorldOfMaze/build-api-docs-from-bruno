@@ -1,9 +1,7 @@
-import type { Dirent } from "fs";
-
-const { FileSink } = require("bun");
-const { readdir, unlink } = require("node:fs/promises");
-const path = require("node:path");
-const { exit } = require("node:process");
+import type { Dirent } from "node:fs";
+import { readdir, unlink } from "node:fs/promises";
+import path from "node:path";
+import { exit } from "node:process";
 
 export async function combineDocumentation(
 	sourceFilePath: string,
