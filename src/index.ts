@@ -9,7 +9,7 @@ const destination = "documentation/api.md";
 
 // Log header information
 console.clear();
-console.log(`$packageJson.name@${packageJson.version}\n`);
+console.log(`${packageJson.name}@${packageJson.version}\n`);
 
 // Combine the documentation from the source folder into the destination file
 combineDocumentation(source, destination);

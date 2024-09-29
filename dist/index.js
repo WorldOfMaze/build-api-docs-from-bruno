@@ -11,7 +11,7 @@ const source = "Collections";
 const destination = "documentation/api.md";
 // Log header information
 console.clear();
-console.log(`$packageJson.name@${package_json_1.default.version}\n`);
+console.log(`${package_json_1.default.name}@${package_json_1.default.version}\n`);
 // Combine the documentation from the source folder into the destination file
 (0, utils_1.combineDocumentation)(source, destination);
 // Log completion message
