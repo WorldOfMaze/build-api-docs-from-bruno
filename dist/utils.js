@@ -100,9 +100,11 @@ function getMetaData(fileContent) {
 function getEndpointName(metaData) {
     var _a;
     console.log("\nGETTING ENDPOINT NAME...");
-    console.log("\nMETADATA:", metaData);
-    const name = (_a = metaData[1]) === null || _a === void 0 ? void 0 : _a.match(/name:\s*(.*)/);
-    console.log("\nNAME:", name);
+    console.log("  METADATA:", metaData);
+    const regex = /.*name:\s*(.*)$/;
+    console.log("  REGEX: ", regex);
+    const name = (_a = metaData[1]) === null || _a === void 0 ? void 0 : _a.match(regex);
+    console.log("NAME:", name);
     if (!name || name[1] === "") {
         console.log("  A name is required to be a valid Bru file; skipping");
         return;
