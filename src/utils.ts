@@ -1,9 +1,11 @@
+import type { Dirent } from "fs";
+
 const { FileSink } = require("bun");
 const { readdir, unlink } = require("node:fs/promises");
 const path = require("node:path");
 const { exit } = require("node:process");
 
-async function combineDocumentation(
+export async function combineDocumentation(
 	sourceFilePath: string,
 	destination: string,
 ): Promise<void> {
@@ -22,10 +24,11 @@ async function combineDocumentation(
 	if (!files) {
 		console.log("No files found");
 		exit(0);
-	}
-	for (let ndx = 0; ndx < files.length; ndx++) {
-		if (files[ndx]) {
-			processBruFile(files[ndx], writer);
+	} else {
+		for (let ndx = 0; ndx < files.length; ndx++) {
+			if (files[ndx]) {
+				processBruFile(files[ndx], writer);
+			}
 		}
 	}
 
@@ -38,7 +41,7 @@ async function combineDocumentation(
  * @param sourcePath - The path to the folder to retrieve the ".bru" files from.
  * @returns A Promise that resolves to an array of file paths for the ".bru" files within the folder and its subdirectories.
  */
-async function getBruFiles(sourcePath) {
+export async function getBruFiles(sourcePath: string) {
 	return await getFolderItems(sourcePath)
 		.then((files) => files.filter((file) => file.endsWith(".bru")))
 		.catch((error) => {
@@ -54,7 +57,9 @@ async function getBruFiles(sourcePath) {
  * @returns A Promise that resolves to an array of file paths within the folder and its subdirectories.
  */
 async function getFolderItems(folderPath: string): Promise<string[]> {
-	const folderEntities = await readdir(folderPath, { withFileTypes: true });
+	const folderEntities = (await readdir(folderPath, {
+		withFileTypes: true,
+	})) as Dirent[];
 	const files: (string | string[])[] = await Promise.all(
 		folderEntities.map((entity) => {
 			const res = path.resolve(folderPath, entity.name);
@@ -115,7 +120,10 @@ This endpoint is not documented.
  * @param writer - The file sink to write the documentation content to.
  * @returns A Promise that resolves when the file has been processed.
  */
-async function processBruFile(fileName: string, writer: typeof FileSink) {
+export async function processBruFile(
+	fileName: string,
+	writer: typeof FileSink,
+) {
 	const endpointDocumentation = await readBruFileDocContent(fileName);
 	if (endpointDocumentation) {
 		writer.write(endpointDocumentation);
@@ -130,7 +138,7 @@ async function processBruFile(fileName: string, writer: typeof FileSink) {
  * @param file - The path to the ".bru" file to read.
  * @returns The documentation content from the ".bru" file, or a message indicating the file is not valid.
  */
-async function readBruFileDocContent(file: string | undefined) {
+export async function readBruFileDocContent(file: string | undefined) {
 	console.log(`Processing '${file}'...`);
 	if (!file) {
 		console.log("  File is not valid; skipping");
@@ -148,10 +156,3 @@ async function readBruFileDocContent(file: string | undefined) {
 	}
 	return docContent[1];
 }
-
-module.exports = {
-	combineDocumentation,
-	getBruFiles,
-	processBruFile,
-	readBruFileDocContent,
-};

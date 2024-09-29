@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { combineDocumentation } = require("./utils.ts");
+import { combineDocumentation } from "./utils";
 
 // TODO: Change source and destination to be either command line arguments or config file settings
 const source = "Collections";
