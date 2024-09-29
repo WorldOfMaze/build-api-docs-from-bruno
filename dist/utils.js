@@ -84,7 +84,6 @@ function getFolderItems(folderPath) {
  * @returns The metadata section from the ".bru" file content, or `undefined` if the metadata section is not found.
  */
 function getMetaData(fileContent) {
-    console.log("GETTING META DATA");
     const metaData = fileContent.match(/meta \{([^}]*)\}/);
     if (!metaData) {
         console.log("  Meta section is required to be a valid Bru file; skipping");
@@ -100,7 +99,9 @@ function getMetaData(fileContent) {
  */
 function getEndpointName(metaData) {
     var _a;
+    console.log("\nGETTING ENDPOINT NAME...");
     const name = (_a = metaData[1]) === null || _a === void 0 ? void 0 : _a.match(/name:\s*(.*)/);
+    console.log("\nNAME:", name);
     if (!name || name[1] === "") {
         console.log("  A name is required to be a valid Bru file; skipping");
         return;
@@ -147,15 +148,15 @@ function readBruFileDocContent(fileName) {
         const content = yield node_fs_1.promises.readFile(fileName, "utf-8");
         console.log("CONTENT: \n", content);
         const docContent = content.match(/docs \{([^}]*)\}/);
-        console.log("DOCUMENT CONTENT: \n", docContent);
-        if (docContent === null) {
-            console.log("DOCUMENT CONTENT IS EMPTY");
+        console.log("\nDOCUMENT CONTENT: \n", docContent);
+        if (!docContent) {
+            console.log("\nDOCUMENT CONTENT IS EMPTY");
             const metaData = getMetaData(content);
-            console.log("METADATA: \n", metaData);
+            console.log("\nMETADATA: \n", metaData);
             if (!metaData)
                 return;
             const name = getEndpointName(metaData);
-            console.log("ENDPOINT NAME: \n", name);
+            console.log("\nENDPOINT NAME: \n", name);
             if (!name)
                 return;
             return missingDocumentationContent(name[1]);
