@@ -1,16 +1,9 @@
-// const { FileSink } = require("bun");
+const { FileSink } = require("bun");
 const { readdir, unlink } = require("node:fs/promises");
 const path = require("node:path");
 const { exit } = require("node:process");
 
-/**
- * Combines the documentation from multiple ".bru" files into a single output file.
- *
- * @param sourceFilePath - The path to the folder containing the ".bru" files to combine.
- * @param destination - The path to the output file where the combined documentation will be written.
- * @returns A Promise that resolves when the documentation has been combined and written to the output file.
- */
-export async function combineDocumentation(
+async function combineDocumentation(
 	sourceFilePath: string,
 	destination: string,
 ): Promise<void> {
@@ -39,14 +32,13 @@ export async function combineDocumentation(
 	// Close the file
 	writer.end();
 }
-
 /**
  * Retrieves a list of files with the ".bru" extension from the specified source path.
  *
  * @param sourcePath - The path to the folder to retrieve the ".bru" files from.
  * @returns A Promise that resolves to an array of file paths for the ".bru" files within the folder and its subdirectories.
  */
-export async function getBruFiles(sourcePath) {
+async function getBruFiles(sourcePath) {
 	return await getFolderItems(sourcePath)
 		.then((files) => files.filter((file) => file.endsWith(".bru")))
 		.catch((error) => {
@@ -123,7 +115,7 @@ This endpoint is not documented.
  * @param writer - The file sink to write the documentation content to.
  * @returns A Promise that resolves when the file has been processed.
  */
-export async function processBruFile(fileName: string, writer: FileSink) {
+async function processBruFile(fileName: string, writer: typeof FileSink) {
 	const endpointDocumentation = await readBruFileDocContent(fileName);
 	if (endpointDocumentation) {
 		writer.write(endpointDocumentation);
@@ -138,7 +130,7 @@ export async function processBruFile(fileName: string, writer: FileSink) {
  * @param file - The path to the ".bru" file to read.
  * @returns The documentation content from the ".bru" file, or a message indicating the file is not valid.
  */
-export async function readBruFileDocContent(file: string | undefined) {
+async function readBruFileDocContent(file: string | undefined) {
 	console.log(`Processing '${file}'...`);
 	if (!file) {
 		console.log("  File is not valid; skipping");
@@ -156,3 +148,10 @@ export async function readBruFileDocContent(file: string | undefined) {
 	}
 	return docContent[1];
 }
+
+module.exports = {
+	combineDocumentation,
+	getBruFiles,
+	processBruFile,
+	readBruFileDocContent,
+};
