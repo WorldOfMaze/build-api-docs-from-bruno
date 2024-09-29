@@ -13,12 +13,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.combineDocumentation = combineDocumentation;
-exports.getBruFiles = getBruFiles;
-exports.processBruFile = processBruFile;
-exports.readBruFileDocContent = readBruFileDocContent;
+const node_fs_1 = require("node:fs");
 const promises_1 = require("node:fs/promises");
 const node_path_1 = __importDefault(require("node:path"));
 const node_process_1 = require("node:process");
+/**
+ * Combines the documentation from multiple ".bru" files into a single output file.
+ *
+ * @param sourceFilePath - The path to the folder containing the ".bru" files to combine.
+ * @param destination - The path to the output file where the combined documentation will be written.
+ * @returns A Promise that resolves when the documentation has been combined and written to the output file.
+ */
 function combineDocumentation(sourceFilePath, destination) {
     return __awaiter(this, void 0, void 0, function* () {
         const files = yield getBruFiles(sourceFilePath);
@@ -29,21 +34,15 @@ function combineDocumentation(sourceFilePath, destination) {
         // Delete the output file if it exists
         yield (0, promises_1.unlink)(destination);
         // Create the output file and get the writer
-        const outFile = Bun.file(destination);
-        const writer = outFile.writer();
-        if (!files) {
-            console.log("No files found");
-            (0, node_process_1.exit)(0);
-        }
-        else {
-            for (let ndx = 0; ndx < files.length; ndx++) {
-                if (files[ndx]) {
-                    processBruFile(files[ndx], writer);
-                }
+        const outFileHandle = yield node_fs_1.promises.open(destination, "w");
+        for (let ndx = 0; ndx < files.length; ndx++) {
+            if (files[ndx]) {
+                processBruFile(files[ndx], outFileHandle);
             }
         }
+        // }
         // Close the file
-        writer.end();
+        outFileHandle.close();
     });
 }
 /**
@@ -129,30 +128,28 @@ This endpoint is not documented.
  * @param writer - The file sink to write the documentation content to.
  * @returns A Promise that resolves when the file has been processed.
  */
-function processBruFile(fileName, writer) {
+function processBruFile(fileName, fileHandle) {
     return __awaiter(this, void 0, void 0, function* () {
         const endpointDocumentation = yield readBruFileDocContent(fileName);
         if (endpointDocumentation) {
-            writer.write(endpointDocumentation);
-            writer.write("\n\n");
-            writer.flush();
+            yield fileHandle.write(`${endpointDocumentation}\n\n`);
         }
     });
 }
 /**
  * Reads the content of a ".bru" file and extracts the documentation section.
  *
- * @param file - The path to the ".bru" file to read.
+ * @param fileName - The path to the ".bru" file to read.
  * @returns The documentation content from the ".bru" file, or a message indicating the file is not valid.
  */
-function readBruFileDocContent(file) {
+function readBruFileDocContent(fileName) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(`Processing '${file}'...`);
-        if (!file) {
+        console.log(`Processing '${fileName}'...`);
+        if (!fileName) {
             console.log("  File is not valid; skipping");
             return;
         }
-        const content = yield Bun.file(file).text();
+        const content = yield node_fs_1.promises.readFile(fileName, "utf-8");
         const docContent = content.match(/docs \{([^}]*)\}/);
         if (docContent === null) {
             const metaData = getMetaData(content);

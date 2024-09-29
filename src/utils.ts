@@ -1,6 +1,4 @@
-import type { Dirent } from "node:fs";
-import { promises as fs } from "node:fs";
-import { readdir, unlink } from "node:fs/promises";
+import { promises as fs, type Dirent } from "node:fs";
 import path from "node:path";
 import { exit } from "node:process";
 
@@ -22,21 +20,25 @@ export async function combineDocumentation(
 	}
 
 	// Delete the output file if it exists
-	await unlink(destination);
+	await fs.unlink(destination);
 
 	// Create the output file and get the writer
 	const outFileHandle = await fs.open(destination, "w");
 
 	for (let ndx = 0; ndx < files.length; ndx++) {
 		if (files[ndx]) {
-			processBruFile(files[ndx], outFileHandle);
+			await processBruFile(files[ndx], outFileHandle);
 		}
 	}
 	// }
 
 	// Close the file
-	outFileHandle.close();
+	console.log(
+		`File processing complete\nDocumentation written to ${destination}`,
+	);
+	await outFileHandle.close();
 }
+
 /**
  * Retrieves a list of files with the ".bru" extension from the specified source path.
  *
@@ -59,7 +61,7 @@ async function getBruFiles(sourcePath: string) {
  * @returns A Promise that resolves to an array of file paths within the folder and its subdirectories.
  */
 async function getFolderItems(folderPath: string): Promise<string[]> {
-	const folderEntities = (await readdir(folderPath, {
+	const folderEntities = (await fs.readdir(folderPath, {
 		withFileTypes: true,
 	})) as Dirent[];
 	const files: (string | string[])[] = await Promise.all(
