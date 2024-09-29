@@ -1,7 +1,7 @@
-import type { FileSink } from "bun";
-import { readdir, unlink } from "node:fs/promises";
-import path from "node:path";
-import { exit } from "node:process";
+// const { FileSink } = require("bun");
+const { readdir, unlink } = require("node:fs/promises");
+const path = require("node:path");
+const { exit } = require("node:process");
 
 /**
  * Combines the documentation from multiple ".bru" files into a single output file.
@@ -26,7 +26,10 @@ export async function combineDocumentation(
 	// Create the output file and get the writer
 	const outFile = Bun.file(destination);
 	const writer = outFile.writer();
-
+	if (!files) {
+		console.log("No files found");
+		exit(0);
+	}
 	for (let ndx = 0; ndx < files.length; ndx++) {
 		if (files[ndx]) {
 			processBruFile(files[ndx], writer);
