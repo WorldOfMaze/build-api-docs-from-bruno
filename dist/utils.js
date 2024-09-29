@@ -8,30 +8,32 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.combineDocumentation = combineDocumentation;
 exports.getBruFiles = getBruFiles;
 exports.processBruFile = processBruFile;
 exports.readBruFileDocContent = readBruFileDocContent;
-const { FileSink } = require("bun");
-const { readdir, unlink } = require("node:fs/promises");
-const path = require("node:path");
-const { exit } = require("node:process");
+const promises_1 = require("node:fs/promises");
+const node_path_1 = __importDefault(require("node:path"));
+const node_process_1 = require("node:process");
 function combineDocumentation(sourceFilePath, destination) {
     return __awaiter(this, void 0, void 0, function* () {
         const files = yield getBruFiles(sourceFilePath);
         if (!files || files.length === 0) {
             console.log("No files found");
-            exit(0);
+            (0, node_process_1.exit)(0);
         }
         // Delete the output file if it exists
-        yield unlink(destination);
+        yield (0, promises_1.unlink)(destination);
         // Create the output file and get the writer
         const outFile = Bun.file(destination);
         const writer = outFile.writer();
         if (!files) {
             console.log("No files found");
-            exit(0);
+            (0, node_process_1.exit)(0);
         }
         else {
             for (let ndx = 0; ndx < files.length; ndx++) {
@@ -56,7 +58,7 @@ function getBruFiles(sourcePath) {
             .then((files) => files.filter((file) => file.endsWith(".bru")))
             .catch((error) => {
             console.error(error);
-            exit(1);
+            (0, node_process_1.exit)(1);
         });
     });
 }
@@ -68,11 +70,11 @@ function getBruFiles(sourcePath) {
  */
 function getFolderItems(folderPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        const folderEntities = (yield readdir(folderPath, {
+        const folderEntities = (yield (0, promises_1.readdir)(folderPath, {
             withFileTypes: true,
         }));
         const files = yield Promise.all(folderEntities.map((entity) => {
-            const res = path.resolve(folderPath, entity.name);
+            const res = node_path_1.default.resolve(folderPath, entity.name);
             return entity.isDirectory() ? getFolderItems(res) : res;
         }));
         return Array.prototype.concat(...files);
