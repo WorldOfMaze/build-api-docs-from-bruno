@@ -30,9 +30,7 @@ export async function combineDocumentation(
 			await processBruFile(files[ndx], outFileHandle);
 		}
 	}
-	// }
 
-	// Close the file
 	console.log(
 		`File processing complete\nDocumentation written to ${destination}`,
 	);
@@ -137,19 +135,22 @@ async function processBruFile(fileName: string, fileHandle: fs.FileHandle) {
  * @param fileName - The path to the ".bru" file to read.
  * @returns The documentation content from the ".bru" file, or a message indicating the file is not valid.
  */
-async function readBruFileDocContent(fileName: string | undefined) {
+async function readBruFileDocContent(
+	fileName: string,
+): Promise<string | undefined> {
 	console.log(`Processing '${fileName}'...`);
-	if (!fileName) {
-		console.log("  File is not valid; skipping");
-		return;
-	}
 	const content = await fs.readFile(fileName, "utf-8");
+	console.log("CONTENT: \n", content);
 	const docContent = content.match(/docs \{([^}]*)\}/);
+	console.log("DOCUMENT CONTENT: \n", docContent);
 	if (docContent === null) {
+		console.log("DOCUMENT CONTENT IS EMPTY");
 		const metaData = getMetaData(content);
+		console.log("METADATA: \n", metaData);
 		if (!metaData) return;
 
 		const name = getEndpointName(metaData);
+		console.log("ENDPOINT NAME: \n", name);
 		if (!name) return;
 		return missingDocumentationContent(name[1]);
 	}

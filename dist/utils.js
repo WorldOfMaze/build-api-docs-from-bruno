@@ -14,7 +14,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.combineDocumentation = combineDocumentation;
 const node_fs_1 = require("node:fs");
-const promises_1 = require("node:fs/promises");
 const node_path_1 = __importDefault(require("node:path"));
 const node_process_1 = require("node:process");
 /**
@@ -32,17 +31,16 @@ function combineDocumentation(sourceFilePath, destination) {
             (0, node_process_1.exit)(0);
         }
         // Delete the output file if it exists
-        yield (0, promises_1.unlink)(destination);
+        yield node_fs_1.promises.unlink(destination);
         // Create the output file and get the writer
         const outFileHandle = yield node_fs_1.promises.open(destination, "w");
         for (let ndx = 0; ndx < files.length; ndx++) {
             if (files[ndx]) {
-                processBruFile(files[ndx], outFileHandle);
+                yield processBruFile(files[ndx], outFileHandle);
             }
         }
-        // }
-        // Close the file
-        outFileHandle.close();
+        console.log(`File processing complete\nDocumentation written to ${destination}`);
+        yield outFileHandle.close();
     });
 }
 /**
@@ -69,7 +67,7 @@ function getBruFiles(sourcePath) {
  */
 function getFolderItems(folderPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        const folderEntities = (yield (0, promises_1.readdir)(folderPath, {
+        const folderEntities = (yield node_fs_1.promises.readdir(folderPath, {
             withFileTypes: true,
         }));
         const files = yield Promise.all(folderEntities.map((entity) => {
@@ -145,17 +143,18 @@ function processBruFile(fileName, fileHandle) {
 function readBruFileDocContent(fileName) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`Processing '${fileName}'...`);
-        if (!fileName) {
-            console.log("  File is not valid; skipping");
-            return;
-        }
         const content = yield node_fs_1.promises.readFile(fileName, "utf-8");
+        console.log("CONTENT: \n", content);
         const docContent = content.match(/docs \{([^}]*)\}/);
+        console.log("DOCUMENT CONTENT: \n", docContent);
         if (docContent === null) {
+            console.log("DOCUMENT CONTENT IS EMPTY");
             const metaData = getMetaData(content);
+            console.log("METADATA: \n", metaData);
             if (!metaData)
                 return;
             const name = getEndpointName(metaData);
+            console.log("ENDPOINT NAME: \n", name);
             if (!name)
                 return;
             return missingDocumentationContent(name[1]);
