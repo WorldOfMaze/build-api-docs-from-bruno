@@ -100,6 +100,7 @@ function getMetaData(fileContent) {
 function getEndpointName(metaData) {
     var _a;
     console.log("\nGETTING ENDPOINT NAME...");
+    console.log("\nMETADATA:", metaData);
     const name = (_a = metaData[1]) === null || _a === void 0 ? void 0 : _a.match(/name:\s*(.*)/);
     console.log("\nNAME:", name);
     if (!name || name[1] === "") {
