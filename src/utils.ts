@@ -31,9 +31,6 @@ export async function combineDocumentation(
 		}
 	}
 
-	console.log(
-		`File processing complete\nDocumentation written to '${destination}'`,
-	);
 	await outFileHandle.close();
 }
 

@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -7,9 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import { exit } from "node:process";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.combineDocumentation = combineDocumentation;
+const node_fs_1 = require("node:fs");
+const node_path_1 = __importDefault(require("node:path"));
+const node_process_1 = require("node:process");
 /**
  * Combines the documentation from multiple ".bru" files into a single output file.
  *
@@ -17,23 +23,22 @@ import { exit } from "node:process";
  * @param destination - The path to the output file where the combined documentation will be written.
  * @returns A Promise that resolves when the documentation has been combined and written to the output file.
  */
-export function combineDocumentation(sourceFilePath, destination) {
+function combineDocumentation(sourceFilePath, destination) {
     return __awaiter(this, void 0, void 0, function* () {
         const files = yield getBruFiles(sourceFilePath);
         if (!files || files.length === 0) {
             console.log("No files found");
-            exit(0);
+            (0, node_process_1.exit)(0);
         }
         // Delete the output file if it exists
-        yield fs.unlink(destination);
+        yield node_fs_1.promises.unlink(destination);
         // Create the output file and get the writer
-        const outFileHandle = yield fs.open(destination, "w");
+        const outFileHandle = yield node_fs_1.promises.open(destination, "w");
         for (let ndx = 0; ndx < files.length; ndx++) {
             if (files[ndx]) {
                 yield processBruFile(files[ndx], outFileHandle);
             }
         }
-        console.log(`File processing complete\nDocumentation written to '${destination}'`);
         yield outFileHandle.close();
     });
 }
@@ -49,7 +54,7 @@ function getBruFiles(sourcePath) {
             .then((files) => files.filter((file) => file.endsWith(".bru")))
             .catch((error) => {
             console.error(error);
-            exit(1);
+            (0, node_process_1.exit)(1);
         });
     });
 }
@@ -61,11 +66,11 @@ function getBruFiles(sourcePath) {
  */
 function getFolderItems(folderPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        const folderEntities = (yield fs.readdir(folderPath, {
+        const folderEntities = (yield node_fs_1.promises.readdir(folderPath, {
             withFileTypes: true,
         }));
         const files = yield Promise.all(folderEntities.map((entity) => {
-            const res = path.resolve(folderPath, entity.name);
+            const res = node_path_1.default.resolve(folderPath, entity.name);
             return entity.isDirectory() ? getFolderItems(res) : res;
         }));
         return Array.prototype.concat(...files);
@@ -138,7 +143,7 @@ function processBruFile(fileName, fileHandle) {
  */
 function readBruFileDocContent(fileName) {
     return __awaiter(this, void 0, void 0, function* () {
-        const content = yield fs.readFile(fileName, "utf-8");
+        const content = yield node_fs_1.promises.readFile(fileName, "utf-8");
         const docContent = content.match(/docs \{([^}]*)\}/);
         if (!docContent) {
             const metaData = getMetaData(content);
