@@ -87,22 +87,19 @@ function getMetaData(fileContent: string): string | undefined {
 }
 
 /**
- * Retrieves the name of the endpoint from the metadata section of a ".bru" file.
+ * Retrieves the name of an endpoint from the metadata section of a ".bru" file.
  *
- * @param metaData - The metadata section of the ".bru" file content.
+ * @param metaData - The metadata section of the ".bru" file.
  * @returns The name of the endpoint, or `undefined` if the name is not found or is empty.
  */
 function getEndpointName(metaData: string): string | undefined {
-	console.log("\nGETTING ENDPOINT NAME...");
-	console.log("  METADATA:", metaData);
 	const regex = /.*name:\s*(.*)/i;
-	console.log("  REGEX: ", regex);
-	const name = metaData[1]?.match(regex);
-	console.log("NAME:", name);
+	const name = metaData.match(regex);
 	if (!name || name[1] === "") {
 		console.log("  A name is required to be a valid Bru file; skipping");
 		return;
 	}
+	return name[1];
 }
 
 /**
@@ -154,10 +151,10 @@ async function readBruFileDocContent(
 		console.log("\nMETADATA: \n", metaData);
 		if (!metaData) return;
 
-		const name = getEndpointName(metaData);
-		console.log("\nENDPOINT NAME: \n", name);
-		if (!name) return;
-		return missingDocumentationContent(name[1]);
+		const endpointName = getEndpointName(metaData);
+		console.log("\nENDPOINT NAME: ", endpointName);
+		if (!endpointName) return;
+		return missingDocumentationContent(endpointName);
 	}
 	return docContent[1];
 }
