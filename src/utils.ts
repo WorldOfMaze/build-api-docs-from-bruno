@@ -78,12 +78,13 @@ async function getFolderItems(folderPath: string): Promise<string[]> {
  * @returns The metadata section from the ".bru" file content, or `undefined` if the metadata section is not found.
  */
 function getMetaData(fileContent: string): string | undefined {
+	console.log("GETTING META DATA");
 	const metaData = fileContent.match(/meta \{([^}]*)\}/);
 	if (!metaData) {
 		console.log("  Meta section is required to be a valid Bru file; skipping");
 		return;
 	}
-	return "";
+	return metaData[1];
 }
 
 /**
