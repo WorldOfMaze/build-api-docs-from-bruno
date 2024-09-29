@@ -125,6 +125,7 @@ This endpoint is not documented.
  * @returns A Promise that resolves when the file has been processed.
  */
 async function processBruFile(fileName: string, fileHandle: fs.FileHandle) {
+	console.log(`Processing '${fileName}...'`);
 	const endpointDocumentation = await readBruFileDocContent(fileName);
 	if (endpointDocumentation) {
 		await fileHandle.write(`${endpointDocumentation}\n\n`);

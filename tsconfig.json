@@ -1,15 +1,19 @@
 {
   "compilerOptions": {
-    "types":  ["bun-types"],
-    "module": "CommonJS",
-    "target": "ES6",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist",
+    "resolveJsonModule": true,
+    "rootDir": "./src",
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "strict": true,
+    "target": "ES6",
+
+    "types": ["bun-types"]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+  "exclude": ["node_modules", "**/*.spec.ts"],
+
+  "include": ["src/**/*"]
 }
