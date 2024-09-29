@@ -10,6 +10,11 @@ This command line tool will build API documentation from Bruno collection (`.bru
 
 ## Table of Contents
 
+## Installation
+
+```bash
+npx build-api-docs-from-bruno@latest
+
 ## Usage
 From the root directory of the project, run the following command:
 

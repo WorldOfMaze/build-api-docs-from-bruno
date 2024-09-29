@@ -1,6 +1,6 @@
 {
 	"name": "build-api-docs-from-bruno",
-	"version": "1.0.29",
+	"version": "1.0.30",
 	"description": "A command-line tool for generating API documentation from the documentation in a Bruno collection.",
 	"keywords": [
 		"API",
@@ -27,8 +27,7 @@
 	},
 	"scripts": {
 		"build": "tsc",
-		"test": "echo \"Error: no test specified\" && exit 1",
-		"install": "npx build-api-docs-from-bruno@latest"
+		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"homepage": "https://github.com/WorldOfMaze/build-api-docs-from-bruno#readme",
 	"devDependencies": {
