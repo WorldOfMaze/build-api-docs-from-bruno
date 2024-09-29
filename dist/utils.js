@@ -39,7 +39,7 @@ function combineDocumentation(sourceFilePath, destination) {
                 yield processBruFile(files[ndx], outFileHandle);
             }
         }
-        console.log(`File processing complete\nDocumentation written to ${destination}`);
+        console.log(`File processing complete\nDocumentation written to '${destination}'`);
         yield outFileHandle.close();
     });
 }
@@ -115,7 +115,7 @@ function getEndpointName(metaData) {
 function missingDocumentationContent(fileName) {
     return `
 
-# ${fileName[1]}
+# ${fileName}
 
 This endpoint is not documented.
 `;
@@ -143,19 +143,13 @@ function processBruFile(fileName, fileHandle) {
  */
 function readBruFileDocContent(fileName) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(`Processing '${fileName}'...`);
         const content = yield node_fs_1.promises.readFile(fileName, "utf-8");
-        console.log("CONTENT: \n", content);
         const docContent = content.match(/docs \{([^}]*)\}/);
-        console.log("\nDOCUMENT CONTENT: \n", docContent);
         if (!docContent) {
-            console.log("\nDOCUMENT CONTENT IS EMPTY");
             const metaData = getMetaData(content);
-            console.log("\nMETADATA: \n", metaData);
             if (!metaData)
                 return;
             const endpointName = getEndpointName(metaData);
-            console.log("\nENDPOINT NAME: ", endpointName);
             if (!endpointName)
                 return;
             return missingDocumentationContent(endpointName);

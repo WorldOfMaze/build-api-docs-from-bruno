@@ -32,7 +32,7 @@ export async function combineDocumentation(
 	}
 
 	console.log(
-		`File processing complete\nDocumentation written to ${destination}`,
+		`File processing complete\nDocumentation written to '${destination}'`,
 	);
 	await outFileHandle.close();
 }
@@ -111,7 +111,7 @@ function getEndpointName(metaData: string): string | undefined {
 function missingDocumentationContent(fileName: string): string {
 	return `
 
-# ${fileName[1]}
+# ${fileName}
 
 This endpoint is not documented.
 `;
@@ -140,19 +140,13 @@ async function processBruFile(fileName: string, fileHandle: fs.FileHandle) {
 async function readBruFileDocContent(
 	fileName: string,
 ): Promise<string | undefined> {
-	console.log(`Processing '${fileName}'...`);
 	const content = await fs.readFile(fileName, "utf-8");
-	console.log("CONTENT: \n", content);
 	const docContent = content.match(/docs \{([^}]*)\}/);
-	console.log("\nDOCUMENT CONTENT: \n", docContent);
 	if (!docContent) {
-		console.log("\nDOCUMENT CONTENT IS EMPTY");
 		const metaData = getMetaData(content);
-		console.log("\nMETADATA: \n", metaData);
 		if (!metaData) return;
 
 		const endpointName = getEndpointName(metaData);
-		console.log("\nENDPOINT NAME: ", endpointName);
 		if (!endpointName) return;
 		return missingDocumentationContent(endpointName);
 	}
