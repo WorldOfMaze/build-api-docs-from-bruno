@@ -1,7 +1,8 @@
 {
 	"name": "build-api-docs-from-bruno",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "A command-line tool for generating API documentation from the documentation in a Bruno collection.",
+	"type": "module",
 	"keywords": [
 		"API",
 		"bruno",
