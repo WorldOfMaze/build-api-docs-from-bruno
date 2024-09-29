@@ -101,7 +101,7 @@ function getEndpointName(metaData) {
     var _a;
     console.log("\nGETTING ENDPOINT NAME...");
     console.log("  METADATA:", metaData);
-    const regex = /.*name:\s*(.*)$/;
+    const regex = /.*name:\s*(.*)/;
     console.log("  REGEX: ", regex);
     const name = (_a = metaData[1]) === null || _a === void 0 ? void 0 : _a.match(regex);
     console.log("NAME:", name);

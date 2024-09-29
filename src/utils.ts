@@ -95,7 +95,7 @@ function getMetaData(fileContent: string): string | undefined {
 function getEndpointName(metaData: string): string | undefined {
 	console.log("\nGETTING ENDPOINT NAME...");
 	console.log("  METADATA:", metaData);
-	const regex = /.*name:\s*(.*)$/;
+	const regex = /.*name:\s*(.*)/;
 	console.log("  REGEX: ", regex);
 	const name = metaData[1]?.match(regex);
 	console.log("NAME:", name);
