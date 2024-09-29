@@ -12,7 +12,6 @@ This command line tool will build API documentation from Bruno collection (`.bru
 
 ## Installation
 
-```bash
 npx build-api-docs-from-bruno@latest
 
 ## Usage
