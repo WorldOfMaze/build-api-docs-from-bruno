@@ -1,19 +1,20 @@
 {
-  "compilerOptions": {
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "outDir": "./dist",
-    "resolveJsonModule": true,
-    "rootDir": "./src",
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "ES6",
+	"compilerOptions": {
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"outDir": "./dist",
+		"resolveJsonModule": true,
+		"rootDir": "./src",
+		"skipLibCheck": true,
+		"strict": true,
+		"target": "ES6",
 
-    "types": ["bun-types"]
-  },
-  "exclude": ["node_modules", "**/*.spec.ts"],
+		"types": ["bun-types"]
+	},
+	"exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.walkthroughs"],
 
-  "include": ["src/**/*"]
+	"include": ["src/**/*"],
+	"typeRoots": ["./types"]
 }

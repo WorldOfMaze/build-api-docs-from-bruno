@@ -1,0 +1,18 @@
+meta {
+  name: By project ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:3000/api/projects/prj_a7107d70104a4b098a8e9f88b967e9d6
+  body: none
+  auth: none
+}
+
+tests {
+  text("should be able to login", function() {
+    const data = res.getData();
+    expect(res.getStatus()).toEqual(200);
+  })
+}

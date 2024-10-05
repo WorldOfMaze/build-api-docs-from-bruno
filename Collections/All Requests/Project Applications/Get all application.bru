@@ -1,0 +1,21 @@
+meta {
+  name: Get all application
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:3000/api/project-applications
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Test project component - updated",
+    "closed": false,
+    "color": "#808080",
+    "projectId": "prj_a7107d70104a4b098a8e9f88b967e9d6",
+    "applicationId": "pa__fd3bf3298d4c44c8908fe3a23a934f6a"
+  }
+}

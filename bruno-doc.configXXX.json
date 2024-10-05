@@ -1,0 +1,4 @@
+{
+	"destination": "./doc/api.md",
+	"source": "./BrunoCollection"
+}

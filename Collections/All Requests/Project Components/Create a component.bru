@@ -1,0 +1,21 @@
+meta {
+  name: Create a component
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:3000/api/project-components
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Anotherr Big Thing",
+    "closed": false,
+    "color": "#808080",
+    "projectId": "prj_a7107d70104a4b098a8e9f88b967e9d6",
+    "applicationId": "pa__fd3bf3298d4c44c8908fe3a23a934f6a"
+  }
+}

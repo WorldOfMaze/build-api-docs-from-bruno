@@ -1,0 +1,18 @@
+meta {
+  name: Update a component
+  type: http
+  seq: 4
+}
+
+patch {
+  url: http://localhost:3000/api/project-components
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "id": "pc__226510e010744b10861fed8b512916f2",
+    "name": "A BIG Thing"
+  }
+}

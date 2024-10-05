@@ -1,0 +1,21 @@
+meta {
+  name: Update an application
+  type: http
+  seq: 2
+}
+
+patch {
+  url: http://localhost:3000/api/project-applications/pa__a5b46d56adf14a76919d6ea2966410d7
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "id": "pa__a5b46d56adf14a76919d6ea2966410d7",
+    "name": "Banking Application",
+    "closed": false,
+    "color": "#808080",
+    "projectId": "prj_a7107d70104a4b098a8e9f88b967e9d6"
+  }
+}

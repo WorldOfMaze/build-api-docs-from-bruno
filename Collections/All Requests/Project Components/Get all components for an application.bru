@@ -1,0 +1,25 @@
+meta {
+  name: Get all components for an application
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:3000/api/project-components?applicationId=pa__fd3bf3298d4c44c8908fe3a23a934f6a
+  body: json
+  auth: none
+}
+
+params:query {
+  applicationId: pa__fd3bf3298d4c44c8908fe3a23a934f6a
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "key": "value"
+  }
+}
