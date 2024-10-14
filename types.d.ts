@@ -1,5 +1,7 @@
+import { ConfigSchema } from './src/schema';
+
 declare const globals: {
-	config: Config;
+  config: Config;
 };
 
 /**
@@ -10,11 +12,11 @@ declare const globals: {
  * @property {boolean} verbose - Indicates whether the build process should output detailed information about the process to the console.
  */
 export type BuildCommandArgs = {
-	destination: string;
-	silent: boolean;
-	source: string;
-	test: boolean;
-	verbose: boolean;
+  destination: string;
+  silent: boolean;
+  source: string;
+  test: boolean;
+  verbose: boolean;
 };
 
 /**
@@ -24,15 +26,15 @@ export type BuildCommandArgs = {
  * @property {boolean} [test] - Indicates that the build process should only test the process, without writing any files.
  */
 export type BuildCommandOptions = {
-	silent?: boolean;
-	verbose?: boolean;
-	test?: boolean;
+  silent?: boolean;
+  verbose?: boolean;
+  test?: boolean;
 };
 
 /**
  * Represents the configuration object for the application, derived from the configSchema type.
  */
-export type Config = Prettify<z.infer<typeof configSchema>>;
+export type Config = Prettify<ConfigSchema>;
 
 /**
  * Represents the options for combining documentation.
@@ -41,9 +43,9 @@ export type Config = Prettify<z.infer<typeof configSchema>>;
  * @property {boolean} test - Indicates that the build process should only test the process, without writing any files.
  */
 export type CombineDocumentationOptions = {
-	silent: boolean;
-	verbose: boolean;
-	test: boolean;
+  silent: boolean;
+  verbose: boolean;
+  test: boolean;
 };
 /**
  * Represents the arguments for the init command.
@@ -51,10 +53,10 @@ export type CombineDocumentationOptions = {
  * @property {boolean} verbose - Indicates whether the init process should output detailed information about the process to the console.
  */
 export type InitCommandArgs = {
-	configFile: string;
-	force: boolean;
-	silent: boolean;
-	verbose: boolean;
+  configFile: string;
+  force: boolean;
+  silent: boolean;
+  verbose: boolean;
 };
 
 /**
@@ -64,10 +66,32 @@ export type InitCommandArgs = {
  * @property {boolean} [force] - Indicates whether the init process should force the operation, even if it would overwrite existing files.
  */
 export type InitCommandOptions = {
-	configFileName: string;
-	force?: boolean;
-	silent?: boolean;
-	verbose?: boolean;
+  configFileName: string;
+  force?: boolean;
+  silent?: boolean;
+  verbose?: boolean;
+};
+
+/**
+ * Represents a logging function that can be used to log messages at different log levels.
+ *
+ * The `LogFunction` type has the following properties:
+ * - `(level: keyof typeof logLevels, message: string): void` - A function that can be called to log a message at the specified log level.
+ * - `options: LogOptions` - An object that contains options for controlling the logging behavior.
+ * - `debug(message: string): void` - A convenience function for logging a debug-level message.
+ * - `error(message: string): void` - A convenience function for logging an error-level message.
+ * - `info(message: string): void` - A convenience function for logging an info-level message.
+ * - `verbose(message: string): void` - A convenience function for logging a verbose-level message.
+ * - `warn(message: string): void` - A convenience function for logging a warning-level message.
+ */
+type LogFunction = {
+  (level: keyof typeof logLevels, message: string, options: LogOptions): void;
+  options: LogOptions;
+  debug: (message: string) => void;
+  error: (message: string) => void;
+  info: (message: string) => void;
+  verbose: (message: string) => void;
+  warn: (message: string) => void;
 };
 
 /**
@@ -78,7 +102,7 @@ export type InitCommandOptions = {
  * - `"verbose"`: Indicates a verbose message that should be logged.
  * - `"debug"`: Indicates a debug-level message that should be logged.
  */
-export type LogLevel = "error" | "warn" | "info" | "verbose" | "debug";
+export type LogLevel = 'error' | 'warn' | 'info' | 'verbose' | 'debug';
 
 /**
  * Represents the options for logging.
@@ -86,8 +110,8 @@ export type LogLevel = "error" | "warn" | "info" | "verbose" | "debug";
  * @property {boolean} verbose - Indicates whether logging should output detailed information.
  */
 export type LogOptions = {
-	silent: boolean;
-	verbose: boolean;
+  silent: boolean;
+  verbose: boolean;
 };
 
 /**
@@ -98,5 +122,5 @@ export type LogOptions = {
  * @returns A new type with the same properties as `T`, but with the `unknown` type added to the intersection.
  */
 export type Prettify<T> = {
-	[K in keyof T]: T[K];
+  [K in keyof T]: T[K];
 } & unknown;

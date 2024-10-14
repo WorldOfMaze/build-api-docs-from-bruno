@@ -17,35 +17,101 @@ const prompts_1 = require("@inquirer/prompts");
 const yargs_1 = __importDefault(require("yargs"));
 const helpers_1 = require("yargs/helpers");
 const package_json_1 = __importDefault(require("../package.json"));
+const constants_1 = require("./constants");
+const logger_1 = require("./logger");
+const utils_1 = require("./utils");
 const yargs_2 = require("./yargs");
-// TODO: Read the configuration file if it exists; any parameter specified in the command line will override the configuration file.
 // TODO: Echo the parameters being used to the console for each command.
-// TODO: Fix help file as commands are no longer displayed, only options.
 // Log header information
-const argv = (0, yargs_1.default)((0, helpers_1.hideBin)(process.argv))
-    .alias("h", "help")
-    .alias("v", "version")
+(0, yargs_1.default)((0, helpers_1.hideBin)(process.argv))
+    .alias('h', 'help')
+    .alias('v', 'version')
+    // TODO: update default command to use config object
     .command({
-    command: "*",
-    handler: () => __awaiter(void 0, void 0, void 0, function* () {
+    command: '*',
+    describe: 'Bruno documentation generator.',
+    handler: (argv) => __awaiter(void 0, void 0, void 0, function* () {
+        logger_1.logger.info(package_json_1.default.name);
+        logger_1.logger.info(JSON.stringify(constants_1.LOG_LEVELS, null, 2));
+        const config = yield (0, utils_1.getConfig)(argv);
+        if (!config) {
+            logger_1.logger.error('\nInvalid configuration file; aborting.');
+            process.exit(0);
+        }
+        globalThis.config = config;
         const source = yield (0, prompts_1.input)({
-            message: "Where is the collection of Bruno files?",
-            default: "Collections",
+            message: 'Where is the collection of Bruno files?',
+            default: 'Collections',
             required: true,
         });
-        console.log({ source });
+        config.source = source;
+        const destination = yield (0, prompts_1.input)({
+            message: 'Where should the documentation file be saved?',
+            default: 'documentation/api.md',
+            required: true,
+        });
+        config.destination = destination;
+        let test = yield (0, prompts_1.select)({
+            message: 'Do you want to save the documentation of just test the process?',
+            choices: [
+                {
+                    name: 'Yes, save the documentation',
+                    value: false,
+                },
+                {
+                    name: 'No, just test the process without writing documentation',
+                    value: true,
+                },
+            ],
+        });
+        if (test) {
+            logger_1.logger.info('Testing build process...\n');
+            try {
+                yield (0, utils_1.combineDocumentation)(argv);
+                logger_1.logger.verbose('File processing complete.');
+                logger_1.logger.verbose(`Documentation written to '${destination}'S`);
+                const build = yield (0, prompts_1.confirm)({
+                    message: 'Do you now want to actually build the documentation?',
+                    default: true,
+                });
+                if (build)
+                    test = false;
+            }
+            catch (error) {
+                logger_1.logger.error(error);
+            }
+            const confirmation = !test
+                ? // TODO: skip this question if the documentation file does not exist
+                    yield (0, prompts_1.confirm)({
+                        message: 'Are you ready to continue?  If you do, the prior documentation will be overwritten.',
+                        default: true,
+                    })
+                : false;
+            if (confirmation) {
+                logger_1.logger.info('Executing build process...');
+            }
+            const saveConfig = yield (0, prompts_1.confirm)({
+                message: 'Do you want to save these options to the configuration file for future use?  This will overwrite any existing configuration options.',
+                default: true,
+            });
+            if (saveConfig) {
+                // TODO: save the configuration options to the configuration file
+                logger_1.logger.info('Saving configuration options...');
+            }
+            logger_1.logger.info('Done');
+            return;
+        }
     }),
 })
     .command(yargs_2.buildCommand)
     .command(yargs_2.initCommand)
-    .demandCommand(1, "Please specify a command.")
-    .help("h", "Show this help information.")
-    .option("silent", yargs_2.commonOptions.silent)
-    .option("verbose", yargs_2.commonOptions.verbose)
+    .help('h', 'Show this help information.')
+    .option('configFile', yargs_2.commonOptions.configFile)
+    .option('silent', yargs_2.commonOptions.silent)
+    .option('verbose', yargs_2.commonOptions.verbose)
     .scriptName(package_json_1.default.name)
-    .showHelp("log")
     .showHelpOnFail(true)
-    .showVersion("log")
-    .version("v", package_json_1.default.version)
+    .showVersion('log')
+    .version('v', package_json_1.default.version)
     .wrap(process.stdout.columns)
     .parse();

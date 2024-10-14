@@ -1,9 +1,8 @@
 {
-	"destination": "./documentation/api.md",
-	"source": "Collections",
-	"test": false,
-	"logOptions": {
-		"silent": false,
-		"verbose": false
-	}
+  "destination": "./documentation/api.md",
+  "source": "Collections",
+  "logOptions": {
+    "silent": false,
+    "verbose": false
+  }
 }

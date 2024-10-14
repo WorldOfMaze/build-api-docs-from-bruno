@@ -10,49 +10,51 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.initCommand = exports.buildCommand = exports.registeredCommands = exports.commonOptions = void 0;
-const constants_1 = require("./constants");
+const logger_1 = require("./logger");
 const utils_1 = require("./utils");
 exports.commonOptions = {
-    config: {
-        alias: "c",
-        type: "string",
-        describe: "Optional path to config file.",
+    configFile: {
+        alias: 'c',
+        type: 'string',
+        describe: 'Optional path to config file.',
     },
     destination: {
-        alias: "d",
-        type: "string",
-        describe: "The path and name of the output file.",
-        demandOption: true,
+        alias: 'd',
+        type: 'string',
+        describe: 'The path and name of the output file.',
     },
     force: {
-        alias: "f",
-        type: "boolean",
-        describe: "Overwrite existing data.",
-        default: false,
+        alias: 'f',
+        type: 'boolean',
+        describe: 'Overwrite existing data.',
+    },
+    header: {
+        type: 'string',
+        describe: 'The path and name of the header file.',
     },
     silent: {
-        alias: "q",
-        type: "boolean",
-        describe: "Produce no output.",
-        default: false,
+        alias: 'q',
+        type: 'boolean',
+        describe: 'Produce no output.',
     },
     source: {
-        alias: "s",
-        type: "string",
-        describe: "Path to folder containing .bru files.",
-        demandOption: true,
+        alias: 's',
+        type: 'string',
+        describe: 'Path to folder containing .bru files.',
+    },
+    tail: {
+        type: 'string',
+        describe: 'The path and name of the tail file.',
     },
     test: {
-        alias: "t",
-        type: "boolean",
-        describe: "Test the documentation build process.",
-        default: false,
+        alias: 't',
+        type: 'boolean',
+        describe: 'Test the documentation build process.',
     },
     verbose: {
-        alias: "r",
-        type: "boolean",
-        describe: "Log extra information.",
-        default: false,
+        alias: 'r',
+        type: 'boolean',
+        describe: 'Log extra information.',
     },
 };
 /**
@@ -67,7 +69,7 @@ exports.registeredCommands = [];
  * @param command - A single command or an array of commands to register.
  */
 function registerCommand(command) {
-    if (typeof command === "string") {
+    if (typeof command === 'string') {
         exports.registeredCommands.push(command);
     }
     else if (Array.isArray(command)) {
@@ -81,46 +83,41 @@ function registerCommand(command) {
  *
  */
 exports.buildCommand = {
-    command: "build",
-    describe: "Builds the API documentation.",
-    builder: (yargs) => yargs
+    command: 'build',
+    describe: 'Builds the API documentation.',
+    builder: yargs => yargs
         .strict()
         .help()
         .version(false)
-        .option("source", exports.commonOptions.source)
-        .option("destination", exports.commonOptions.destination)
-        .option("test", exports.commonOptions.test)
-        .check((argv) => {
+        .option('destination', exports.commonOptions.destination)
+        .option('silent', exports.commonOptions.silent)
+        .option('source', exports.commonOptions.source)
+        .option('test', exports.commonOptions.test)
+        .option('verbose', exports.commonOptions.verbose)
+        // TODO: move this check to getConfig()
+        .check(argv => {
         if (argv.silent && argv.verbose) {
-            throw new Error("Arguments silent and verbose are mutually exclusive");
+            throw new Error('Arguments silent and verbose are mutually exclusive');
         }
         return true;
-    })
-        .demandOption("source", "destination"),
+    }),
     handler: (argv) => __awaiter(void 0, void 0, void 0, function* () {
-        const combineDocumentationOptions = {
-            silent: argv.silent,
-            verbose: argv.verbose,
-            test: argv.test,
-        };
-        const logOptions = {
-            silent: argv.silent,
-            verbose: argv.verbose,
-        };
-        (0, utils_1.log)("info", `${combineDocumentationOptions.test ? "Testing build process" : "Building documentation"}...\n`, logOptions);
+        const config = yield (0, utils_1.getConfig)(argv);
+        logger_1.logger.info(`${config.test ? 'Testing build process' : 'Building documentation'}`);
         try {
-            const { destination: destinationFile, source: sourcePath } = argv;
-            yield (0, utils_1.combineDocumentation)(String(sourcePath), String(destinationFile), combineDocumentationOptions);
-            (0, utils_1.log)("verbose", `File processing complete\nDocumentation written to '${destinationFile}'\n`, logOptions);
+            yield (0, utils_1.combineDocumentation)(argv);
+            logger_1.logger.verbose(`File processing complete.`);
+            logger_1.logger.verbose(`Documentation written to '${config.destination}'\n`);
         }
         catch (error) {
             if (error instanceof Error) {
-                (0, utils_1.log)("error", error.message, logOptions);
+                logger_1.logger.error(error.message);
             }
             else {
-                (0, utils_1.log)("error", `An error occurred during the build: ${String(error)}`, logOptions);
+                logger_1.logger.error(`An error occurred during the build`);
+                logger_1.logger.error(error);
             }
-            (0, utils_1.log)("error", "\nBuild complete with errors; documentation may be incomplete.\n", logOptions);
+            logger_1.logger.error('Build complete with errors; documentation may be incomplete');
         }
     }),
 };
@@ -129,31 +126,28 @@ exports.buildCommand = {
  *
  * This command module is responsible for initializing the configuration file. It uses the `initConfigFile` function to create the configuration file.
  */
+// TODO: update initCommand to use config object
 exports.initCommand = {
-    command: "init",
-    describe: "Initialize the configuration file.",
-    builder: (yargs) => yargs
+    command: 'init',
+    describe: 'Initialize the configuration file.',
+    builder: yargs => yargs
         .strict()
         .help()
-        .option("force", exports.commonOptions.force)
-        .check((argv) => {
+        .option('force', exports.commonOptions.force)
+        .check(argv => {
         if (argv.silent && argv.verbose) {
-            throw new Error("Arguments silent and verbose are mutually exclusive");
+            throw new Error('Arguments silent and verbose are mutually exclusive');
         }
         return true;
     }),
     handler: (argv) => __awaiter(void 0, void 0, void 0, function* () {
         const initCommandOptions = {
-            configFileName: constants_1.CONFIG_FILE_NAME,
+            configFileName: argv.configFile,
             force: argv.force,
             silent: argv.silent || false,
             verbose: argv.verbose || false,
         };
-        const logOptions = {
-            silent: argv.silent,
-            verbose: argv.verbose,
-        };
-        (0, utils_1.log)("info", "Initializing the configuration file...\n", logOptions);
+        logger_1.logger.info(`Initializing the configuration file at '${argv.configFile}'`);
         yield (0, utils_1.initConfigFile)(initCommandOptions);
     }),
 };
