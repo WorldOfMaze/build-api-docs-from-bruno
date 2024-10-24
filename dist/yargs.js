@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -9,52 +32,83 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.initCommand = exports.buildCommand = exports.registeredCommands = exports.commonOptions = void 0;
+exports.guidedCommand = exports.buildCommand = exports.registeredCommands = exports.commonOptions = void 0;
+const config_1 = __importStar(require("./config"));
+const inquirer_1 = require("./inquirer");
 const logger_1 = require("./logger");
 const utils_1 = require("./utils");
 exports.commonOptions = {
     configFile: {
-        alias: 'c',
-        type: 'string',
-        describe: 'Optional path to config file.',
+        alias: "c",
+        type: "string",
+        describe: "Optional path to config file.",
+        default: "bruno-doc.config.json",
+    },
+    debug: {
+        alias: "D",
+        default: false,
+        describe: "Log debug information.",
+        type: "boolean",
     },
     destination: {
-        alias: 'd',
-        type: 'string',
-        describe: 'The path and name of the output file.',
+        alias: "d",
+        type: "string",
+        describe: "The path and name of the output file.",
+        default: "./documentation/api.md",
+    },
+    excludes: {
+        alias: "e",
+        // array: true,
+        describe: "The path and name of one or more exclude file.",
+        type: "string",
     },
     force: {
-        alias: 'f',
-        type: 'boolean',
-        describe: 'Overwrite existing data.',
+        alias: "f",
+        default: false,
+        describe: "Overwrite existing data and configuration without asking.",
+        type: "boolean",
     },
     header: {
-        type: 'string',
-        describe: 'The path and name of the header file.',
+        alias: "H",
+        type: "string",
+        array: true,
+        describe: "The path and name of one or more header file.",
+    },
+    saveConfig: {
+        alias: "S",
+        default: true,
+        describe: "Save the configuration to a file.",
+        type: "boolean",
     },
     silent: {
-        alias: 'q',
-        type: 'boolean',
-        describe: 'Produce no output.',
+        alias: "q",
+        default: false,
+        describe: "Produce no output.",
+        type: "boolean",
     },
     source: {
-        alias: 's',
-        type: 'string',
-        describe: 'Path to folder containing .bru files.',
+        alias: "s",
+        type: "string",
+        describe: "Path to folder containing .bru files.",
+        default: "Collections",
     },
     tail: {
-        type: 'string',
-        describe: 'The path and name of the tail file.',
+        alias: "T",
+        array: true,
+        describe: "The path and name of one or more tail file.",
+        type: "string",
     },
     test: {
-        alias: 't',
-        type: 'boolean',
-        describe: 'Test the documentation build process.',
+        alias: "t",
+        type: "boolean",
+        describe: "Test the documentation build process.",
+        default: false,
     },
     verbose: {
-        alias: 'r',
-        type: 'boolean',
-        describe: 'Log extra information.',
+        alias: "r",
+        type: "boolean",
+        describe: "Log extra information.",
+        default: false,
     },
 };
 /**
@@ -62,94 +116,105 @@ exports.commonOptions = {
  */
 exports.registeredCommands = [];
 /**
- * Registers one or more commands with the application.
- *
- * This function takes a single command or an array of commands and adds them to the `registeredCommands` array. This allows the application to keep track of all the registered commands.
- *
- * @param command - A single command or an array of commands to register.
- */
-function registerCommand(command) {
-    if (typeof command === 'string') {
-        exports.registeredCommands.push(command);
-    }
-    else if (Array.isArray(command)) {
-        exports.registeredCommands.push(...command);
-    }
-}
-/**
  * Builds the API documentation.
  *
  * This command module is responsible for building the API documentation. It uses the `combineDocumentation` function to generate the documentation from the source files and write it to the specified destination file.
  *
  */
 exports.buildCommand = {
-    command: 'build',
-    describe: 'Builds the API documentation.',
-    builder: yargs => yargs
-        .strict()
-        .help()
-        .version(false)
-        .option('destination', exports.commonOptions.destination)
-        .option('silent', exports.commonOptions.silent)
-        .option('source', exports.commonOptions.source)
-        .option('test', exports.commonOptions.test)
-        .option('verbose', exports.commonOptions.verbose)
-        // TODO: move this check to getConfig()
-        .check(argv => {
-        if (argv.silent && argv.verbose) {
-            throw new Error('Arguments silent and verbose are mutually exclusive');
-        }
-        return true;
-    }),
+    command: "go",
+    describe: "Builds the API documentation without user input.",
+    builder: (yargs) => yargs.strict().help().version(false),
     handler: (argv) => __awaiter(void 0, void 0, void 0, function* () {
-        const config = yield (0, utils_1.getConfig)(argv);
-        logger_1.logger.info(`${config.test ? 'Testing build process' : 'Building documentation'}`);
-        try {
-            yield (0, utils_1.combineDocumentation)(argv);
-            logger_1.logger.verbose(`File processing complete.`);
-            logger_1.logger.verbose(`Documentation written to '${config.destination}'\n`);
+        console.log("UNattended mode\n");
+        if (argv.debug) {
+            (0, logger_1.setLogLevel)("debug");
         }
-        catch (error) {
-            if (error instanceof Error) {
-                logger_1.logger.error(error.message);
-            }
-            else {
-                logger_1.logger.error(`An error occurred during the build`);
-                logger_1.logger.error(error);
-            }
-            logger_1.logger.error('Build complete with errors; documentation may be incomplete');
+        logger_1.logger.debug("Loading configuration...");
+        (0, config_1.default)(argv);
+        logger_1.logger.debug("Successfully loaded configuration.");
+        logger_1.logger.info("Executing 'go' command...");
+        if (!globalThis.config) {
+            logger_1.logger.error("\nInvalid configuration file; aborting.");
+            process.exit(0);
         }
+        // globalThis.config.source = await source();
+        // globalThis.config.destination = await destination();
+        // globalThis.testMode = await testMode();
+        if (argv.test) {
+            logger_1.logger.warn("Test mode not support in unattended more; skipping.");
+        }
+        // if (globalThis.testMode) {
+        // 	logger.info("Testing build process\n");
+        // 	try {
+        // 		await combineDocumentation();
+        // 		logger.verbose("Test complete.");
+        // 		globalThis.testMode = false;
+        // 		globalThis.buildMode = await confirmBuild();
+        // 	} catch (error) {
+        // 		logger.error(error);
+        // 		process.exit(1);
+        // 	}
+        // } else {
+        // 	globalThis.buildMode = true;
+        // }
+        // if (globalThis.buildMode) {
+        logger_1.logger.info("Executing build process");
+        yield (0, utils_1.combineDocumentation)();
+        // }
+        if (argv.saveConfig) {
+        }
+        // await saveConfigToFile(argv);
+        logger_1.logger.info("Done!");
+        return;
     }),
 };
 /**
- * Defines the command module for the "init" command, which initializes the configuration file.
+ * Defines the command module for the "guided" command, which provides a guided experience for generating the API documentation.
  *
- * This command module is responsible for initializing the configuration file. It uses the `initConfigFile` function to create the configuration file.
+ * This command module is responsible for guiding the user through the process of generating the API documentation. It prompts the user for various configuration options, such as the source and destination directories, and then generates the documentation based on those options.
  */
-// TODO: update initCommand to use config object
-exports.initCommand = {
-    command: 'init',
-    describe: 'Initialize the configuration file.',
-    builder: yargs => yargs
-        .strict()
-        .help()
-        .option('force', exports.commonOptions.force)
-        .check(argv => {
-        if (argv.silent && argv.verbose) {
-            throw new Error('Arguments silent and verbose are mutually exclusive');
-        }
-        return true;
-    }),
+exports.guidedCommand = {
+    command: "*",
+    describe: "Guided documentation generator.",
     handler: (argv) => __awaiter(void 0, void 0, void 0, function* () {
-        const initCommandOptions = {
-            configFileName: argv.configFile,
-            force: argv.force,
-            silent: argv.silent || false,
-            verbose: argv.verbose || false,
-        };
-        logger_1.logger.info(`Initializing the configuration file at '${argv.configFile}'`);
-        yield (0, utils_1.initConfigFile)(initCommandOptions);
+        console.log("Guided mode\n");
+        if (argv.debug) {
+            (0, logger_1.setLogLevel)("debug");
+        }
+        logger_1.logger.debug("Loading configuration...");
+        (0, config_1.default)(argv);
+        logger_1.logger.debug("Successfully loaded configuration.");
+        logger_1.logger.info("Executing 'guided' command...");
+        if (!globalThis.config) {
+            logger_1.logger.error("\nInvalid configuration file; aborting.");
+            process.exit(0);
+        }
+        globalThis.config.source = yield (0, inquirer_1.source)();
+        globalThis.config.destination = yield (0, inquirer_1.destination)();
+        globalThis.testMode = yield (0, inquirer_1.testMode)();
+        if (globalThis.testMode) {
+            logger_1.logger.info("Testing build process\n");
+            try {
+                yield (0, utils_1.combineDocumentation)();
+                logger_1.logger.verbose("Test complete.");
+                globalThis.testMode = false;
+                globalThis.buildMode = yield (0, inquirer_1.confirmBuild)();
+            }
+            catch (error) {
+                logger_1.logger.error(error);
+                process.exit(1);
+            }
+        }
+        else {
+            globalThis.buildMode = true;
+        }
+        if (globalThis.buildMode) {
+            logger_1.logger.info("Executing build process");
+            yield (0, utils_1.combineDocumentation)();
+        }
+        yield (0, config_1.saveConfigToFile)(argv);
+        logger_1.logger.info("Done!");
+        return;
     }),
 };
-registerCommand(exports.buildCommand.command);
-registerCommand(exports.initCommand.command);

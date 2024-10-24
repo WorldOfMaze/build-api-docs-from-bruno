@@ -1,17 +1,13 @@
+# Introduction
 
-
+This is an introduction to the documentation for this API.
 # Get Session Token
 
 This endpoint is not documented.
 
-
-
-
 # Get all issue statuses
 
 This endpoint is not documented.
-
-
 
   # Create Project Application
   Creates a new project application.
@@ -81,67 +77,41 @@ This endpoint is not documented.
   | `color`  | The color to be used for the application. |
   | `projectId`  | The ID of the project the application belongs to. |
 
-
-
-
 # Get all application
 
 This endpoint is not documented.
-
-
-
 
 # Update an application
 
 This endpoint is not documented.
 
-
-
-
 # Create a component
 
 This endpoint is not documented.
-
-
-
 
 # Delete a component
 
 This endpoint is not documented.
 
-
-
-
 # Get all components for an application
 
 This endpoint is not documented.
-
-
-
 
 # Get all components
 
 This endpoint is not documented.
 
-
-
-
 # Update a component
 
 This endpoint is not documented.
-
-
-
 
 # All projects
 
 This endpoint is not documented.
 
-
-
-
 # By project ID
 
 This endpoint is not documented.
+# Epilogue
 
-
+This is end material that goes at the end of the documentation for this API.

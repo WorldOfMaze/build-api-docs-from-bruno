@@ -1,0 +1,13 @@
+{
+	"destination": "documentation/api.md",
+	"force": false,
+	"logOptions": {
+		"silent": false,
+		"verbose": false
+	},
+	"source": "Collections",
+	"excludes": ["collection.bru", "Local.bru"],
+	"debug": false,
+	"header": "documentation/header.md",
+	"tail": "documentation/tail.md"
+}

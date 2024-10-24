@@ -13,8 +13,17 @@
 
 		"types": ["bun-types"]
 	},
-	"exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.walkthroughs"],
+	"exclude": [
+		"**/*.py",
+		"**/*.spec.ts",
+		"**/*.test.js",
+		"**/*.test.ts",
+		"**/*.walkthroughs",
+		"**/cody_tutorial.py",
+		"dist",
+		"node_modules"
+	],
 
-	"include": ["src/**/*"],
+	"include": ["src/**/*", "*.d.ts"],
 	"typeRoots": ["./types"]
 }
