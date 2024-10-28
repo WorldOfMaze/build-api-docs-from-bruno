@@ -299,3 +299,4 @@ function validateConfig() {
     logger_1.logger.error("Config is not initialized");
     process.exit(1);
 }
+//# sourceMappingURL=utils.js.map

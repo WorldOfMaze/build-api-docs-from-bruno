@@ -37,35 +37,37 @@
 
 ![Coverage](./coverage/badge-branches.svg)
 
-
 <div class="header-wrapper">
   <h2 id="toc">Table of Contents</h2>
   <a class="back-to-top" href="#top">&#x21B4;</a>
 </div>
 
-**[Description](#description)**<br>
-**[Usage](#usage)**<br>
+**[Description](#description)**<br> **[Usage](#usage)**<br>
+
 - [Global Options](#global-options)<br>
 - [Commands](#commands)<br>
   - [Default](#default)<br>
   - [build](#build)<br>
 
-**[Credits](#credits)**<br>
-**[License](#license)**<br>
-**[Contributing](#contributing)**<br>
-**[Changelog](#changelog)**<br>
+**[Credits](#credits)**<br> **[License](#license)**<br>
+**[Contributing](#contributing)**<br> **[Changelog](#changelog)**<br>
+
 - [Release .1.0](#release-1-1-1)<br>
 - [Enhancements in Progress](#enhancement-in-progress)<br>
-  
-**[Enhancements for Future Versions](#enhancements-for-future-versions)**<br>
 
+**[Enhancements for Future Versions](#enhancements-for-future-versions)**<br>
 
 <div class="header-wrapper">
   <h2 id="description">Description</h2>
   <a class="back-to-top" href="#top">&#x21B4;</a>
 </div>
 
-This command line tool will build API documentation from Bruno collection (`.bru`) files.  Each of these files contains an optional `docs` section which contains Markdown documentation for the endpoint.  This tool will parse the `.bru` files and generate a single Markdown file containing the documentation for each endpoint.  The resulting Markdown file will be saved to the output directory.
+This command line tool will build API documentation from Bruno collection
+(`.bru`) files. Each of these files contains an optional `docs` section which
+contains Markdown documentation for the endpoint. This tool will parse the
+`.bru` files and generate a single Markdown file containing the documentation
+for each endpoint. The resulting Markdown file will be saved to the output
+directory.
 
 <div class="header-wrapper">
   <h2 id="usage">Usage</h2>
@@ -73,7 +75,7 @@ This command line tool will build API documentation from Bruno collection (`.bru
 </div>
 From the root directory of the project, run the following command:
 
-```npx build-api-docs-from-bruno@latest [command] {options}```
+`npx build-api-docs-from-bruno@latest [command] {options}`
 
 <div class="header-wrapper">
   <h3 id="global-options">Global Options</h3>
@@ -101,7 +103,7 @@ From the root directory of the project, run the following command:
   <a class="back-to-top" href="#top">&#x21B4;</a>
 </div>
 
- Builds the API documentation from the Bruno collection files. 
+Builds the API documentation from the Bruno collection files.
 
 | Switch               | Type      | Default | Required | Description                                                             |
 | -------------------- | --------- | ------- | -------- | ----------------------------------------------------------------------- |
@@ -143,9 +145,11 @@ From the root directory of the project, run the following command:
 - [x] Add header content from `header.md` or a specified file
 - [x] Add interactive mode
 - [x] Add silent mode
-- [x] Add support for a list of files or directories to **exclude** that are in the source path and end with `.bru`
+- [x] Add support for a list of files or directories to **exclude** that are in
+      the source path and end with `.bru`
 - [x] Add tail content from `tail.md` or a specified file
-- [x] Add test mode to run process and check for errors but not writing output file
+- [x] Add test mode to run process and check for errors but not writing output
+      file
 - [x] Add verbose mode
 - [x] Allow input of source path, output path and output file name
 - [x] Display message if no command is provided
@@ -168,5 +172,6 @@ From the root directory of the project, run the following command:
 - [ ] Update [Commands](#commands) in README.md
 - [ ] Update [Examples](#examples) in README.md
 - [ ] Update [Global](#global-options) Options in README.md
+- [ ] Convert from tsc to swc
 
 <a class="back-to-top" href="#top">&#x21B4;</a>

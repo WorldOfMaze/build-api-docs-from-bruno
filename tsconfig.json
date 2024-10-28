@@ -1,29 +1,30 @@
 {
-	"compilerOptions": {
-		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
-		"module": "NodeNext",
-		"moduleResolution": "NodeNext",
-		"outDir": "./dist",
-		"resolveJsonModule": true,
-		"rootDir": "./src",
-		"skipLibCheck": true,
-		"strict": true,
-		"target": "ES6",
+  "compilerOptions": {
+    "allowJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist",
+    "resolveJsonModule": true,
+    "rootDir": "./src",
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "ES6",
+    "types": ["bun-types"]
+  },
+  "exclude": [
+    "**/*.py",
+    "**/*.spec.ts",
+    "**/*.test.js",
+    "**/*.test.ts",
+    "**/*.walkthroughs",
+    "**/cody_tutorial.py",
+    "dist",
+    "node_modules"
+  ],
 
-		"types": ["bun-types"]
-	},
-	"exclude": [
-		"**/*.py",
-		"**/*.spec.ts",
-		"**/*.test.js",
-		"**/*.test.ts",
-		"**/*.walkthroughs",
-		"**/cody_tutorial.py",
-		"dist",
-		"node_modules"
-	],
-
-	"include": ["src/**/*", "*.d.ts"],
-	"typeRoots": ["./types"]
+  "include": ["src/**/*", "*.d.ts"],
+  "typeRoots": ["./types"]
 }

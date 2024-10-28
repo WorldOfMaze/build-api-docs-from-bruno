@@ -63,3 +63,4 @@ let argv;
     .catch((error) => {
     console.error("Error parsing arguments", error);
 });
+//# sourceMappingURL=index.js.map
