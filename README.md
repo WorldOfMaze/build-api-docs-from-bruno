@@ -116,20 +116,31 @@ Builds the API documentation from the Bruno collection files.
   <a class="back-to-top" href="#top">&#x21B4;</a>
 </div>
 
-<div class="header-wrapper">
-  <h2 id="credits">Credits</h2>
-  <a class="back-to-top" href="#top">&#x21B4;</a>
-</div>
+Examples will be provided in a future release.
 
 <div class="header-wrapper">
   <h2 id="license">License</h2>
   <a class="back-to-top" href="#top">&#x21B4;</a>
 </div>
 
+**GNU General Public License (GPL)**
+
+This software is licensed under the GNU General Public License (GPL). The GPL allows users to freely use, copy, modify, and distribute this software under the following conditions:
+
+  - Any modified versions of this software must also be licensed under the GPL.
+
+  - The original or modified software cannot be sold or used for profit.
+
+  - The source code must be made available when distributing the software.
+
+For more detailed information, please visit the official [GNU GPL website](https://www.gnu.org/licenses/gpl-3.0.html).
+
 <div class="header-wrapper">
   <h2 id="contributing">Contributing</h2>
   <a class="back-to-top" href="#top">&#x21B4;</a>
 </div>
+
+To contribute, please contact [RamonaSteve](mailto:steve@worldofmaze.us).
 
 <div class="header-wrapper">
   <h2 id="changelog">Change Log</h2>
@@ -153,25 +164,27 @@ Builds the API documentation from the Bruno collection files.
 - [x] Add verbose mode
 - [x] Allow input of source path, output path and output file name
 - [x] Display message if no command is provided
-- [x] Mkek default command `guided` and remove the guided command
+- [x] Make default command `guided` and remove the guided command
 - [x] Update README.md
+- [x] Update unit tests; target 80% coverage
 
 <div class="header-wrapper">
   <h3 id="enhancement-in-progress">Enhancements in Progress</h3>
   <a class="back-to-top" href="#top">&#x21B4;</a>
 </div>
 
-- [ ] Update unit tests; target 80% coverage
+None
 
 <div class="header-wrapper">
   <h2 id="enhancements-for-future-versions">Enhancements for future versions</h2>
   <a class="back-to-top" href="#top">&#x21B4;</a>
 </div>
 
+- [ ] Add example to README.md
+- [ ] Convert from tsc to swc
 - [ ] Ensure all functions have current documentation
 - [ ] Update [Commands](#commands) in README.md
 - [ ] Update [Examples](#examples) in README.md
 - [ ] Update [Global](#global-options) Options in README.md
-- [ ] Convert from tsc to swc
 
 <a class="back-to-top" href="#top">&#x21B4;</a>

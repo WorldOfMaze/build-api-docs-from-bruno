@@ -54,7 +54,7 @@ function configFileExists(configFileName) {
  * @throws {Error} If an error occurs while processing the ".bru" files or creating the output file.
  */
 function combineDocumentation() {
-    return __awaiter(this, arguments, void 0, function* (validateConfigFn = validateConfig, getBruFilesFn = getBruFiles, existsSyncFn = node_fs_1.existsSync, dirnameFn = node_path_1.default.dirname, mkdirSyncFn = node_fs_1.mkdirSync, openSyncFn = node_fs_1.openSync, processHeaderFileFn = processHeaderFile, processBruFileFn = processBruFile, processTailFileFn = processTailFile, closeFn = node_fs_1.close) {
+    return __awaiter(this, arguments, void 0, function* (validateConfigFn = validateConfig, getBruFilesFn = getBruFiles, existsSyncFn = node_fs_1.existsSync, dirnameFn = node_path_1.default.dirname, mkdirSyncFn = node_fs_1.mkdirSync, openSyncFn = node_fs_1.openSync, processHeaderFileFn = processHeaderFile, processBruFileFn = processBruFile, processTailFileFn = processTailFile, closeFn = node_fs_1.close, confirmOverwriteDocsFn = inquirer_1.confirmOverwriteDocs, unlinkSyncFn = node_fs_1.unlinkSync) {
         const config = validateConfigFn();
         try {
             const files = getBruFilesFn(config.source);
@@ -62,44 +62,38 @@ function combineDocumentation() {
                 logger_1.logger.warn("No Bruno files found");
                 return;
             }
-            let outFileHandle = undefined;
-            try {
-                if (!globalThis.testMode) {
-                    if (existsSyncFn(config.destination) &&
-                        !(config === null || config === void 0 ? void 0 : config.force) &&
-                        !(config === null || config === void 0 ? void 0 : config.logOptions.silent)) {
-                        const overwrite = yield (0, inquirer_1.confirmOverwriteDocs)();
-                        if (overwrite) {
-                            (0, node_fs_1.unlinkSync)(config.destination);
-                        }
-                        else {
-                            logger_1.logger.info("User has chosen to not overwrite existing file");
-                            process.exit(0);
-                        }
-                    }
-                    const dirName = dirnameFn(config.destination);
-                    mkdirSyncFn(dirName, { recursive: true });
-                    outFileHandle = openSyncFn(config.destination, "w");
-                    processHeaderFileFn(outFileHandle);
-                    for (let ndx = 0; ndx < files.length; ndx++) {
-                        if (files[ndx]) {
-                            processBruFileFn(files[ndx], outFileHandle);
-                        }
-                    }
-                    processTailFileFn(outFileHandle);
-                    closeFn(outFileHandle);
+            let outFileHandle = 0;
+            if (!globalThis.testMode) {
+                if ((existsSyncFn(config.destination) && config.force) ||
+                    config.logOptions.silent ||
+                    (yield confirmOverwriteDocsFn())) {
+                    unlinkSyncFn(config.destination);
+                }
+                else {
+                    logger_1.logger.info("User has chosen to not overwrite existing file");
+                    process.exit(1);
                 }
             }
-            catch (error) {
-                logger_1.logger.error(error);
-                process.exit(1);
+            const dirName = dirnameFn(config.destination);
+            if (!globalThis.testMode) {
+                mkdirSyncFn(dirName, { recursive: true });
+                outFileHandle = openSyncFn(config.destination, "w");
+            }
+            processHeaderFileFn(outFileHandle);
+            for (let ndx = 0; ndx < files.length; ndx++) {
+                if (files[ndx]) {
+                    processBruFileFn(files[ndx], outFileHandle);
+                }
+            }
+            processTailFileFn(outFileHandle);
+            if (!globalThis.testMode) {
+                closeFn(outFileHandle);
             }
         }
         catch (error) {
-            if (error instanceof Error) {
-                throw error;
-            }
-            throw new Error("An unknown error occurred");
+            logger_1.logger.error(error);
+            console.error("An error occurred while processing the Bruno files; see log for details");
+            process.exit(1);
         }
     });
 }
@@ -225,7 +219,9 @@ function processBruFile(fileName, fileHandle, validateConfigFn = validateConfig,
         logger_1.logger.verbose(`Processing '${fileName}'`);
         const endpointDocumentation = readBruFileDocContentFn(fileName);
         if (endpointDocumentation) {
-            writeSyncFn(fileHandle, `${endpointDocumentation}`);
+            if (!globalThis.testMode) {
+                writeSyncFn(fileHandle, `${endpointDocumentation}`);
+            }
         }
     }
 }
@@ -245,7 +241,9 @@ function processHeaderFile(fileHandle, validateConfigFn = validateConfig, exists
         if (existsSyncFn(headerFile)) {
             const headerFileContent = readFileSyncFn(headerFile, "utf-8");
             try {
-                writeSyncFn(fileHandle, `${headerFileContent}`);
+                if (!globalThis.testMode) {
+                    writeSyncFn(fileHandle, `${headerFileContent}`);
+                }
             }
             catch (error) {
                 logger_1.logger.warn(`Error writing header to file: ${error}`);
@@ -276,7 +274,9 @@ function processTailFile(fileHandle, validateConfigFn = validateConfig, existsSy
             const tailFileContent = readFileSyncFn(tailFile, "utf-8");
             if (fileHandle) {
                 try {
-                    writeSyncFn(fileHandle, `${tailFileContent}`);
+                    if (!globalThis.testMode) {
+                        writeSyncFn(fileHandle, `${tailFileContent}`);
+                    }
                 }
                 catch (error) {
                     logger_1.logger.warn(`Error writing tail to file: ${error}`);

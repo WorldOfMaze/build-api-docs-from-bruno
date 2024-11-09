@@ -45,7 +45,7 @@
 		"documentation-generator",
 		"generator"
 	],
-	"license": "MIT",
+	"license": "GPL-3.0",
 	"main": "dist/index.js",
 	"name": "build-api-docs-from-bruno",
 	"repository": {
