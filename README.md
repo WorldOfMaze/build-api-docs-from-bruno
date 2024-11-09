@@ -35,7 +35,7 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/WorldOfMaze/build-api-docs-from-bruno)
 ![NPM Downloads](https://img.shields.io/npm/dw/build-api-docs-from-bruno)
 
-![Coverage](./coverage/badge-branches.svg)
+![Coverage](./coverage/badge-statements.svg)
 
 <div class="header-wrapper">
   <h2 id="toc">Table of Contents</h2>

@@ -1,4 +1,16 @@
-import { existsSync, promises as fs, unlinkSync, type Dirent } from "node:fs";
+import {
+	accessSync,
+	close,
+	existsSync,
+	promises as fs,
+	mkdirSync,
+	openSync,
+	readFileSync,
+	readdirSync,
+	unlinkSync,
+	writeSync,
+	type Dirent,
+} from "node:fs";
 import path from "node:path";
 import type { Config } from "../types";
 import { confirmOverwriteDocs } from "./inquirer";
@@ -11,11 +23,9 @@ import { logger } from "./logger";
  * @returns A Promise that resolves to `true` if the configuration file exists and is readable, `false` otherwise.
  * @throws {Error} If an error occurs while checking the file.
  */
-export async function configFileExists(
-	configFileName: string,
-): Promise<boolean> {
+export function configFileExists(configFileName: string): boolean {
 	try {
-		await fs.access(configFileName, fs.constants.R_OK);
+		accessSync(configFileName, fs.constants.R_OK);
 		return true;
 	} catch (error) {
 		return false;
@@ -30,56 +40,61 @@ export async function configFileExists(
  * @returns A Promise that resolves when the documentation has been combined.
  * @throws {Error} If an error occurs while processing the ".bru" files or creating the output file.
  */
-export async function combineDocumentation(): Promise<void> {
-	const config = validateConfig();
+export async function combineDocumentation(
+	validateConfigFn = validateConfig,
+	getBruFilesFn = getBruFiles,
+	existsSyncFn = existsSync,
+	dirnameFn = path.dirname,
+	mkdirSyncFn = mkdirSync,
+	openSyncFn = openSync,
+	processHeaderFileFn = processHeaderFile,
+	processBruFileFn = processBruFile,
+	processTailFileFn = processTailFile,
+	closeFn = close,
+	confirmOverwriteDocsFn = confirmOverwriteDocs,
+	unlinkSyncFn = unlinkSync,
+): Promise<void> {
+	const config = validateConfigFn();
 	try {
-		const files = await getBruFiles(config.source);
+		const files = getBruFilesFn(config.source);
 		if (!files || files.length === 0) {
 			logger.warn("No Bruno files found");
 			return;
 		}
-		let outFileHandle = undefined;
-		try {
-			if (!globalThis.testMode) {
-				if (
-					existsSync(config.destination) &&
-					!config?.force &&
-					!config?.logOptions.silent
-				) {
-					const overwrite = await confirmOverwriteDocs();
-					if (overwrite) {
-						unlinkSync(config.destination);
-					} else {
-						logger.info("User has chosen to not overwrite existing file");
-						process.exit(1);
-					}
-				}
-
-				const dirName = path.dirname(config.destination);
-				await fs.mkdir(dirName, { recursive: true });
-				outFileHandle = await fs.open(config.destination, "w");
+		let outFileHandle: number | undefined = 0;
+		if (!globalThis.testMode) {
+			if (
+				(existsSyncFn(config.destination) && config.force) ||
+				config.logOptions.silent ||
+				(await confirmOverwriteDocsFn())
+			) {
+				unlinkSyncFn(config.destination);
+			} else {
+				logger.info("User has chosen to not overwrite existing file");
+				process.exit(1);
 			}
-		} catch (error) {
-			logger.error(error);
-			process.exit(1);
 		}
-
-		await processHeaderFile(outFileHandle);
+		const dirName = dirnameFn(config.destination);
+		if (!globalThis.testMode) {
+			mkdirSyncFn(dirName, { recursive: true });
+			outFileHandle = openSyncFn(config.destination, "w");
+		}
+		processHeaderFileFn(outFileHandle);
 		for (let ndx = 0; ndx < files.length; ndx++) {
 			if (files[ndx]) {
-				await processBruFile(files[ndx], outFileHandle);
+				processBruFileFn(files[ndx], outFileHandle);
 			}
 		}
-		await processTailFile(outFileHandle);
-
-		if (outFileHandle) {
-			await outFileHandle.close();
+		processTailFileFn(outFileHandle);
+		if (!globalThis.testMode) {
+			closeFn(outFileHandle);
 		}
 	} catch (error) {
-		if (error instanceof Error) {
-			throw new Error(error.message);
-		}
-		throw "An unknown error occurred";
+		logger.error(error);
+		console.error(
+			"An error occurred while processing the Bruno files; see log for details",
+		);
+		process.exit(1);
 	}
 }
 
@@ -99,15 +114,25 @@ export function exhaustiveSwitchGuard(
 }
 
 /**
- * Retrieves a list of ".bru" files from the specified source path.
+ * Retrieves all files with the `.bru` extension from a specified source path.
  *
- * @param sourcePath - The path to the folder containing the ".bru" files.
- * @returns A Promise that resolves to an array of file paths for the ".bru" files found in the source path and its subdirectories.
- * @throws {Error} If the source path does not exist.
+ * @param {string} sourcePath - The path from which to retrieve the `.bru` files. This path is relative to the directory containing the function.
+ * @param {Function} [getFolderItemsFn=getFolderItems] - An optional function to retrieve items from a folder. This defaults to the `getFolderItems` function if not provided.  This parameter is intended for testing purposes and should not be provided for normal use.
+ * @returns {string[]} - An array of file names with the `.bru` extension found in the specified source path.
+ * @throws {Error} - Rethrows any error encountered during folder item retrieval if it's not an instance of `Error`.
+ *                   Logs a warning and exits the process if the specified source path does not exist.
+ *
+ * @example
+ * const bruFiles = getBruFiles('path/to/source');
+ * console.log(bruFiles);
+ * // Output might be: ['test1.bru', 'test3.bru']
  */
-async function getBruFiles(sourcePath: string) {
+export function getBruFiles(
+	sourcePath: string,
+	getFolderItemsFn = getFolderItems,
+) {
 	try {
-		const files = await getFolderItems(path.join(__dirname, "..", sourcePath));
+		const files = getFolderItemsFn(path.join(__dirname, "..", sourcePath));
 		return files.filter((file) => file.endsWith(".bru"));
 	} catch (error) {
 		if (error instanceof Error) {
@@ -119,37 +144,43 @@ async function getBruFiles(sourcePath: string) {
 }
 
 /**
- * Retrieves the contents of a folder, recursively traversing any subdirectories.
+ * Retrieves a list of file names from the specified folder path.
  *
- * @param folderPath - The path to the folder to retrieve the contents of.
- * @returns A Promise that resolves to an array of file paths within the folder and its subdirectories.
+ * @param folderPath - The path to the folder to retrieve the file names from.
+ * @returns An array of file names in the specified folder.
  */
-async function getFolderItems(folderPath: string): Promise<string[]> {
-	const folderEntities = (await fs.readdir(folderPath, {
+export function getFolderItems(folderPath: string): string[] {
+	const folderEntities = readdirSync(folderPath, {
 		withFileTypes: true,
-	})) as Dirent[];
-	const files: (string | string[])[] = await Promise.all(
-		folderEntities.map((entity) => {
-			const res = path.resolve(folderPath, entity.name);
-			return entity.isDirectory() ? getFolderItems(res) : res;
-		}),
-	);
-	return Array.prototype.concat(...files);
+	}) as Dirent[];
+	const fileNames = folderEntities
+		.filter((entity) => entity.isFile())
+		.map((file) => file.name);
+	return fileNames;
 }
 
 /**
- * Retrieves the metadata section from the content of a ".bru" file.
+ * Extracts metadata from the file content if present and logs a warning if the meta section is missing.
  *
- * @param fileContent - The content of the ".bru" file.
- * @param fileName - The name of the ".bru" file.
- * @returns The metadata section as a string, or `undefined` if the metadata section is not found or is empty.
- */
-function getMetaData(
+ * @param {string} fileContent - The content of the file to extract metadata from
+ * @param {string} fileName - The name of the file being processed.
+ * @param {Function} [validateConfigFn=validateConfig] - An optional function to validate the configuration. Defaults to `validateConfig` if not provided. This parameter is intended for testing purposes and should not be provided for normal use.
+ * @returns {string | undefined} - The extracted metadata if present, otherwise `undefined`.
+ * @throws {Error} - Rethrows any error encountered during configuration validation.
+ *
+ * @example
+ * const fileContent = "Some content meta {metadata content} more content";
+ * const fileName = "example.bru";
+ * const metadata = getMetaData(fileContent, fileName);
+ * console.log(metadata); // Output: "metadata content"
+ * */
+export function getMetaData(
 	fileContent: string,
 	fileName: string,
+	validateConfigFn = validateConfig,
 ): string | undefined {
 	const metaData = fileContent.match(/meta \{([^}]*)\}/);
-	const config = validateConfig();
+	const config = validateConfigFn();
 	if (!metaData) {
 		if (!config.logOptions.silent)
 			logger.warn(
@@ -159,13 +190,14 @@ function getMetaData(
 	}
 	return metaData[1];
 }
+
 /**
  * Retrieves the name of an endpoint from the metadata section of a ".bru" file.
  *
  * @param metaData - The metadata section of the ".bru" file.
  * @returns The name of the endpoint, or `undefined` if the name is not found or is empty.
  */
-function getEndpointName(metaData: string): string | undefined {
+export function getEndpointName(metaData: string): string | undefined {
 	const name = metaData.match(/.*name:\s*(.*)/i);
 	if (!name || name[1] === "") {
 		logger.warn("A name is required to be a valid .bru file; skipping");
@@ -180,7 +212,7 @@ function getEndpointName(metaData: string): string | undefined {
  * @param fileName - The name of the '.bru' file that is missing documentation.
  * @returns A string containing the message indicating the missing documentation.
  */
-function missingDocumentationContent(fileName: string): string {
+export function missingDocumentationContent(fileName: string): string {
 	return `
 # ${fileName}
 
@@ -195,37 +227,54 @@ This endpoint is not documented.
  * @param fileHandle - An optional file handle to write the documentation content to.
  * @returns A Promise that resolves when the file has been processed.
  */
-async function processBruFile(
+export function processBruFile(
 	fileName: string,
-	fileHandle: fs.FileHandle | undefined,
-) {
-	const config = validateConfig();
-
+	fileHandle: number,
+	validateConfigFn = validateConfig,
+	readBruFileDocContentFn = readBruFileDocContent,
+	writeSyncFn = writeSync,
+): void {
+	const config = validateConfigFn();
 	if (config.excludes?.includes(path.basename(fileName))) {
 		logger.verbose(`'${fileName}' is in the exclude list; skipping`);
 	} else {
 		logger.verbose(`Processing '${fileName}'`);
-		const endpointDocumentation = await readBruFileDocContent(fileName);
-		if (fileHandle && endpointDocumentation) {
-			await fileHandle.write(`${endpointDocumentation}`);
+		const endpointDocumentation = readBruFileDocContentFn(fileName);
+		if (endpointDocumentation) {
+			if (!globalThis.testMode) {
+				writeSyncFn(fileHandle, `${endpointDocumentation}`);
+			}
 		}
 	}
 }
 
-async function processHeaderFile(
-	fileHandle: fs.FileHandle | undefined,
-): Promise<void> {
-	const headerFile = validateConfig().header;
+/**
+ *  Processes the header file by validating the configuration, checking if the header file exists, reading its content,  writing it to the provided file handle.
+ *
+ *  @param fileHandle - The file handle to write the header content to.
+ *  @param  validateConfigFn - The function to validate the configuration.  This parameter is intended for testing purposes and should not be provided for normal use.
+ *  @param  existsSyncFn - The function to check if the file exists. This parameter is intended for testing purposes and should not be provided for normal use.
+ *  @param  readFileSyncFn - The function to read the file content. This parameter is intended for testing purposes and should not be provided for normal use.
+ *  @param  writeSyncFn - The function to write the content to the file handle. This parameter is intended for testing purposes and should not be provided for normal use.
+ */
+export function processHeaderFile(
+	fileHandle: number,
+	validateConfigFn = validateConfig,
+	existsSyncFn = existsSync,
+	readFileSyncFn = readFileSync,
+	writeSyncFn = writeSync,
+): void {
+	const headerFile = validateConfigFn().header;
 	if (headerFile) {
 		logger.verbose(`Processing header file: ${headerFile}`);
-		if (existsSync(headerFile)) {
-			const headerFileContent = await fs.readFile(headerFile, "utf-8");
-			if (fileHandle) {
-				try {
-					await fileHandle.write(`${headerFileContent}`);
-				} catch (error) {
-					logger.warn(`Error writing header to file: ${error}`);
+		if (existsSyncFn(headerFile)) {
+			const headerFileContent = readFileSyncFn(headerFile, "utf-8");
+			try {
+				if (!globalThis.testMode) {
+					writeSyncFn(fileHandle, `${headerFileContent}`);
 				}
+			} catch (error) {
+				logger.warn(`Error writing header to file: ${error}`);
 			}
 		} else {
 			logger.warn(`Header file not found: ${headerFile}; skipping`);
@@ -235,17 +284,32 @@ async function processHeaderFile(
 	}
 }
 
-async function processTailFile(
-	fileHandle: fs.FileHandle | undefined,
-): Promise<void> {
-	const tailFile = validateConfig().tail;
+/**
+ *  Processes the tail file by validating the configuration, checking if the tail file exists, reading its content,  writing it to the provided file handle.
+ *
+ *  @param fileHandle - The file handle to write the header content to.
+ *  @param  validateConfigFn - The function to validate the configuration.  This parameter is intended for testing purposes and should not be provided for normal use.
+ *  @param  existsSyncFn - The function to check if the file exists. This parameter is intended for testing purposes and should not be provided for normal use.
+ *  @param  readFileSyncFn - The function to read the file content. This parameter is intended for testing purposes and should not be provided for normal use.
+ *  @param  writeSyncFn - The function to write the content to the file handle. This parameter is intended for testing purposes and should not be provided for normal use.
+ */
+export function processTailFile(
+	fileHandle: number,
+	validateConfigFn = validateConfig,
+	existsSyncFn = existsSync,
+	readFileSyncFn = readFileSync,
+	writeSyncFn = writeSync,
+): void {
+	const tailFile = validateConfigFn().tail;
 	if (tailFile) {
 		logger.verbose(`Processing tail file: ${tailFile}`);
-		if (existsSync(tailFile)) {
-			const tailFileContent = await fs.readFile(tailFile, "utf-8");
+		if (existsSyncFn(tailFile)) {
+			const tailFileContent = readFileSyncFn(tailFile, "utf-8");
 			if (fileHandle) {
 				try {
-					await fileHandle.write(`${tailFileContent}`);
+					if (!globalThis.testMode) {
+						writeSyncFn(fileHandle, `${tailFileContent}`);
+					}
 				} catch (error) {
 					logger.warn(`Error writing tail to file: ${error}`);
 				}
@@ -259,23 +323,32 @@ async function processTailFile(
 }
 
 /**
- * Reads the documentation content from a '.bru' file.
+ *  Reads the content of a BRU file and extracts the documentation content.
+ *  If the documentation content is not found, retrieves metadata and endpoint name,
+ *  and returns the missing documentation content.
  *
- * @param fileName - The path to the '.bru' file to read the documentation content from.
- * @returns A Promise that resolves to the documentation content if found, or `undefined` if not found.
- */
-async function readBruFileDocContent(
+ *  @param fileName - The name of the file to read.
+ *  @param readFileSyncFn - The function to read the file content.
+ *  @param  getMetaDataFn - The function to get metadata from the file content.
+ *  @param  getEndpointNameFn - The function to get the endpoint name from the metadata.
+ *  @param  missingDocumentationContentFn - The function to get the missing documentation content for the endpoint.
+ *  @returns  - The extracted documentation content or undefined if not found. */
+export function readBruFileDocContent(
 	fileName: string,
-): Promise<string | undefined> {
-	const content = await fs.readFile(fileName, "utf-8");
+	readFileSyncFn = readFileSync,
+	getMetaDataFn = getMetaData,
+	getEndpointNameFn = getEndpointName,
+	missingDocumentationContentFn = missingDocumentationContent,
+): string | undefined {
+	const content = readFileSyncFn(fileName, "utf-8");
 	const docContent = content.match(/docs \{([^}]*)\}/);
 	if (!docContent) {
-		const metaData = getMetaData(content, fileName);
+		const metaData = getMetaDataFn(content, fileName);
 		if (!metaData) return;
 
-		const endpointName = getEndpointName(metaData);
+		const endpointName = getEndpointNameFn(metaData);
 		if (!endpointName) return;
-		return missingDocumentationContent(endpointName);
+		return missingDocumentationContentFn(endpointName);
 	}
 	return docContent[1];
 }

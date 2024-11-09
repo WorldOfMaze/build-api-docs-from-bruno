@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import fs from "node:fs";
 import {
 	confirmBuild,
+	confirmOverwriteDocs,
 	destination,
 	saveConfig,
 	source,
@@ -50,6 +51,26 @@ describe("inquirer functions", () => {
 		});
 	});
 
+	describe("confirmOverwriteDocs", () => {
+		it("should return true when user confirms", async () => {
+			mockConfirm.mockResolvedValue(true);
+			const result = await confirmOverwriteDocs();
+			expect(result).toBe(true);
+			expect(mockLogger.verbose).toHaveBeenCalledWith(
+				"User provided documentation overwrite confirmation: true",
+			);
+		});
+
+		it("should return false when user declines", async () => {
+			mockConfirm.mockResolvedValue(false);
+			const result = await confirmOverwriteDocs();
+			expect(result).toBe(false);
+			expect(mockLogger.verbose).toHaveBeenCalledWith(
+				"User provided documentation overwrite confirmation: false",
+			);
+		});
+	});
+
 	describe("destination", () => {
 		it("should return valid file path", async () => {
 			mockInput.mockResolvedValue("valid/path/file.md");
@@ -61,12 +82,18 @@ describe("inquirer functions", () => {
 		});
 
 		it("should reject invalid file path", async () => {
-			mockInput.mockImplementation(async (options) => {
-				const validationResult = await options.validate("invalid.txt");
-				expect(validationResult).toBe(
-					"Invalid file path. Please enter a valid file name ending in .md",
-				);
-				return "valid/path/file.md";
+			mockInput.mockImplementation((options) => {
+				const prompt = new Promise<string>((resolve) => {
+					if (options.validate) {
+						const validationResult = options.validate("invalid.txt");
+						expect(validationResult).toBe(
+							"Invalid file path. Please enter a valid file name ending in .md",
+						);
+					}
+					resolve("valid/path/file.md");
+				}) as Promise<string> & { cancel: () => void };
+				prompt.cancel = () => {};
+				return prompt;
 			});
 			await destination();
 		});
@@ -102,15 +129,20 @@ describe("inquirer functions", () => {
 				"User provided source: valid/directory",
 			);
 		});
-
 		it("should reject non-existent directory", async () => {
 			mockFs.existsSync.mockReturnValue(false);
-			mockInput.mockImplementation(async (options) => {
-				const validationResult = await options.validate("invalid/directory");
-				expect(validationResult).toBe(
-					"Invalid file path. Please enter a valid file path.",
-				);
-				return "valid/directory";
+			mockInput.mockImplementation((options) => {
+				const prompt = new Promise<string>((resolve) => {
+					if (options.validate) {
+						const validationResult = options.validate("invalid/directory");
+						expect(validationResult).toBe(
+							"Invalid file path. Please enter a valid file path.",
+						);
+					}
+					resolve("valid/directory");
+				}) as Promise<string> & { cancel: () => void };
+				prompt.cancel = () => {};
+				return prompt;
 			});
 			await source();
 		});

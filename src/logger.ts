@@ -1,4 +1,5 @@
-import { existsSync, unlinkSync } from "node:fs";
+// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
+import { existsSync, unlinkSync } from "fs";
 import path from "node:path";
 import { createLogger, format, transports } from "winston";
 

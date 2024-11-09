@@ -1,5 +1,10 @@
 import _ from "lodash";
-import { existsSync, promises as fs, readFileSync } from "node:fs";
+import {
+	existsSync,
+	promises as fs,
+	readFileSync,
+	writeFileSync,
+} from "node:fs";
 import path from "node:path";
 import type { Config } from "../types";
 import { DEFAULT_DEFAULT_CONFIG_FILE_NAME } from "./constants";
@@ -127,7 +132,6 @@ export async function saveConfigToFile(argv: {
 	if (existsSync(configFile)) {
 		try {
 			const data = readFileSync(configFile, "utf8");
-			console.log(data);
 			const existingConfig = JSON.parse(data);
 
 			// If configs are equal, return early
@@ -135,24 +139,17 @@ export async function saveConfigToFile(argv: {
 				return;
 			}
 
-			configData = { ...configData, ...existingConfig };
+			configData = { ...existingConfig, ...configData };
 		} catch (err) {
-			console.log("ERROR", err);
+			// console.log("ERROR", err);
 			logger.error(`Problem reading '${configFile}';  aborting!`);
 			throw err;
 		}
 	}
-
-	console.log("PRESENT");
-
 	// Save configuration data to file
 	if (await saveConfig()) {
 		try {
-			await fs.writeFile(
-				configFile,
-				JSON.stringify(configData, null, 2),
-				"utf8",
-			);
+			writeFileSync(configFile, JSON.stringify(configData, null, 2), "utf8");
 			logger.info("Configuration file updated!");
 			logger.verbose(JSON.stringify(configData, null, 2));
 		} catch (err) {
@@ -202,16 +199,16 @@ export function validateConfig(config: unknown): void {
 				configOk = false;
 			}
 		});
-		const validConfig = config as Config;
-		if (validConfig.logOptions.verbose && validConfig.logOptions.silent) {
-			logger.warn("verbose and silent are mutually exclusive; ignoring both.");
-			validConfig.logOptions.verbose = false;
-			validConfig.logOptions.silent = false;
-		}
-		if (!configOk) {
-			console.log("Error validating config file; see process.log for details");
-			process.exit(1);
-		}
+	}
+	const validConfig = config as Config;
+	if (validConfig.logOptions.verbose && validConfig.logOptions.silent) {
+		logger.warn("Verbose and silent are mutually exclusive; ignoring both.");
+		validConfig.logOptions.verbose = false;
+		validConfig.logOptions.silent = false;
+	}
+	if (!configOk) {
+		console.log("Error validating config file; see process.log for details");
+		process.exit(1);
 	}
 }
 
