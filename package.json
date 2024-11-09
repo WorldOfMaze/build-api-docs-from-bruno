@@ -4,7 +4,7 @@
 		"email": "steve@worldofmaze.com"
 	},
 	"bin": {
-		"build-api-docs-from-bruno": "./dist/index.js"
+		"build-api-docs-from-bruno": "dist/index.js"
 	},
 	"bugs": {
 		"url": "https://github.com/WorldOfMaze/build-api-docs-from-bruno/issues"
@@ -60,5 +60,5 @@
 		"test:coverage": "npm test -- --no-verbose --coverage",
 		"test:badges": "npm run test:coverage && jest-coverage-badges"
 	},
-	"version": "1.1.0"
+	"version": "1.1.1"
 }

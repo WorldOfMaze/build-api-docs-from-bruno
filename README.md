@@ -1,32 +1,4 @@
-<style>
-  .back-to-top {
-    font-size: 24px;
-    margin-left: auto;
-    position: absolute;
-    right: 0;
-    text-decoration: none;
-    top: 50%;
-    transform: translateY(-50%) scale(1, -1);
-  }
-
-  h2 {
-    border-bottom: 1px solid #ccc;
-    flex: 1;
-  }
-
-  .header-wrapper {
-    align-items: center;
-    display: flex;
-    justify-content: space-between;
-    position: relative;
-    width: 100%;
-  }
-</style>
-
-<div class="header-wrapper">
-  <h1 id="top">build-api-docs-from-bruno</h1>
-  <a class="back-to-top" href="#top">&#x21B4;</a>
-</div>
+# build-api-docs-from-bruno
 
 ![NPM Version](https://img.shields.io/npm/v/build-api-docs-from-bruno)
 ![NPM Unpacked Size](https://img.shields.io/npm/unpacked-size/build-api-docs-from-bruno)
@@ -37,30 +9,25 @@
 
 ![Coverage](./coverage/badge-statements.svg)
 
-<div class="header-wrapper">
-  <h2 id="toc">Table of Contents</h2>
-  <a class="back-to-top" href="#top">&#x21B4;</a>
-</div>
+## Table of Contents
 
-**[Description](#description)**<br> **[Usage](#usage)**<br>
-
+**[Description](#description)**<br>
+**[Usage](#usage)**<br>
 - [Global Options](#global-options)<br>
 - [Commands](#commands)<br>
   - [Default](#default)<br>
   - [build](#build)<br>
 
-**[Credits](#credits)**<br> **[License](#license)**<br>
-**[Contributing](#contributing)**<br> **[Changelog](#changelog)**<br>
+**[Contributing](#contributing)**<br>
+**[Changelog](#change-log)**<br>
 
-- [Release .1.0](#release-1-1-1)<br>
-- [Enhancements in Progress](#enhancement-in-progress)<br>
+- [Release 1.1.1](#release-111)<br>
+- [Release 1.1.0](#release-110)<br>
+- [Enhancements in Progress](#enhancements-in-progress)<br>
 
 **[Enhancements for Future Versions](#enhancements-for-future-versions)**<br>
 
-<div class="header-wrapper">
-  <h2 id="description">Description</h2>
-  <a class="back-to-top" href="#top">&#x21B4;</a>
-</div>
+## Description
 
 This command line tool will build API documentation from Bruno collection
 (`.bru`) files. Each of these files contains an optional `docs` section which
@@ -69,18 +36,14 @@ contains Markdown documentation for the endpoint. This tool will parse the
 for each endpoint. The resulting Markdown file will be saved to the output
 directory.
 
-<div class="header-wrapper">
-  <h2 id="usage">Usage</h2>
-  <a class="back-to-top" href="#top">&#x21B4;</a>
-</div>
+
+## Usage
+
 From the root directory of the project, run the following command:
 
 `npx build-api-docs-from-bruno@latest [command] {options}`
 
-<div class="header-wrapper">
-  <h3 id="global-options">Global Options</h3>
-  <a class="back-to-top" href="#top">&#x21B4;</a>
-</div>
+### Global Options
 
 | Switch           | Type      | Default | Required | Description                                    |
 | ---------------- | --------- | ------- | -------- | ---------------------------------------------- |
@@ -89,19 +52,11 @@ From the root directory of the project, run the following command:
 | `--help`         |           |         |          | Displays help information.                     |
 | `-v` `--version` |           |         |          | Displays version information.                  |
 
-<div class="header-wrapper">
-  <h3 id="commands">Commands</h3>
-  <a class="back-to-top" href="#top">&#x21B4;</a>
-</div>
-<div class="header-wrapper">
-  <h4 id="default">Default</h4>
-  <a class="back-to-top" href="#top">&#x21B4;</a>
-</div>
+### Commands
 
-<div class="header-wrapper">
-  <h4 id="build">build</h4>
-  <a class="back-to-top" href="#top">&#x21B4;</a>
-</div>
+#### Default
+
+#### build
 
 Builds the API documentation from the Bruno collection files.
 
@@ -111,17 +66,11 @@ Builds the API documentation from the Bruno collection files.
 | `-d` `--destination` | `string`  |         | Required | The path to the output directory.                                       |
 | `-t` `--test`        | `boolean` | `false` | Optional | Test the build process without writing the output file.                 |
 
-<div class="header-wrapper">
-  <h3 id="examples">Examples</h3>
-  <a class="back-to-top" href="#top">&#x21B4;</a>
-</div>
+### Examples
 
 Examples will be provided in a future release.
 
-<div class="header-wrapper">
-  <h2 id="license">License</h2>
-  <a class="back-to-top" href="#top">&#x21B4;</a>
-</div>
+## License</h2>
 
 **GNU General Public License (GPL)**
 
@@ -135,22 +84,19 @@ This software is licensed under the GNU General Public License (GPL). The GPL al
 
 For more detailed information, please visit the official [GNU GPL website](https://www.gnu.org/licenses/gpl-3.0.html).
 
-<div class="header-wrapper">
-  <h2 id="contributing">Contributing</h2>
-  <a class="back-to-top" href="#top">&#x21B4;</a>
-</div>
+## Contributing</h2>
 
-To contribute, please contact [RamonaSteve](mailto:steve@worldofmaze.us).
+To contribute, contact [RamonaSteve](mailto:steve@worldofmaze.us).
 
-<div class="header-wrapper">
-  <h2 id="changelog">Change Log</h2>
-  <a class="back-to-top" href="#top">&#x21B4;</a>
-</div>
+## Change Log
 
-<div class="header-wrapper">
-  <h3 id="release-1-1-1">Release 1.1.0</h3>
-  <a class="back-to-top" href="#top">&#x21B4;</a>
-</div>
+### Release 1.1.1
+
+- [x] Remove CSS styling from README.md
+
+
+
+### Release 1.1.0
 
 - [x] Add error handling for source directory not existing
 - [x] Add header content from `header.md` or a specified file
@@ -168,17 +114,11 @@ To contribute, please contact [RamonaSteve](mailto:steve@worldofmaze.us).
 - [x] Update README.md
 - [x] Update unit tests; target 80% coverage
 
-<div class="header-wrapper">
-  <h3 id="enhancement-in-progress">Enhancements in Progress</h3>
-  <a class="back-to-top" href="#top">&#x21B4;</a>
-</div>
+### Enhancements in Progress
 
 None
 
-<div class="header-wrapper">
-  <h2 id="enhancements-for-future-versions">Enhancements for future versions</h2>
-  <a class="back-to-top" href="#top">&#x21B4;</a>
-</div>
+## Enhancements for future versions
 
 - [ ] Add example to README.md
 - [ ] Convert from tsc to swc
@@ -186,5 +126,3 @@ None
 - [ ] Update [Commands](#commands) in README.md
 - [ ] Update [Examples](#examples) in README.md
 - [ ] Update [Global](#global-options) Options in README.md
-
-<a class="back-to-top" href="#top">&#x21B4;</a>
