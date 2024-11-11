@@ -12,7 +12,7 @@ import {
 	type Dirent,
 } from "node:fs";
 import path from "node:path";
-import type { Config } from "../types";
+import type { Config } from "../types.ts";
 import { confirmOverwriteDocs } from "./inquirer";
 import { logger } from "./logger";
 
@@ -55,29 +55,49 @@ export async function combineDocumentation(
 	unlinkSyncFn = unlinkSync,
 ): Promise<void> {
 	const config = validateConfigFn();
+	const destination = path.join(process.cwd(), config.destination);
+	const source = path.join(process.cwd(), config.source);
+
+	logger?.verbose(`Destination: ${destination}`);
+	logger?.verbose(`Source: ${source}`);
+
 	try {
-		const files = getBruFilesFn(config.source);
+		const files = getBruFilesFn(source);
 		if (!files || files.length === 0) {
-			logger.warn("No Bruno files found");
+			logger?.warn("No Bruno files found");
 			return;
 		}
+		logger?.debug("The following files will be combined:");
+		files.map((file) => logger?.debug(`- ${file}`));
+
 		let outFileHandle: number | undefined = 0;
 		if (!globalThis.testMode) {
-			if (
-				(existsSyncFn(config.destination) && config.force) ||
-				config.logOptions.silent ||
-				(await confirmOverwriteDocsFn())
-			) {
-				unlinkSyncFn(config.destination);
-			} else {
-				logger.info("User has chosen to not overwrite existing file");
-				process.exit(1);
+			if (existsSyncFn(destination)) {
+				logger?.verbose(`Documentation file already exists at ${destination}`);
+				if (config.force || config.logOptions.silent) {
+					logger?.verbose(
+						`${config.force ? "Force mode is enabled; " : ""} ${config.logOptions.silent ? "Silent mode is enabled; " : ""}overwriting existing file`,
+					);
+					unlinkSyncFn(destination);
+				} else {
+					if (await confirmOverwriteDocsFn()) {
+						unlinkSyncFn(destination);
+					} else {
+						logger?.info(
+							"User has chosen to not overwrite existing file; exiting",
+						);
+						process.exit(0);
+					}
+				}
 			}
 		}
-		const dirName = dirnameFn(config.destination);
+		const dirName = dirnameFn(destination);
 		if (!globalThis.testMode) {
 			mkdirSyncFn(dirName, { recursive: true });
-			outFileHandle = openSyncFn(config.destination, "w");
+			outFileHandle = openSyncFn(destination, "w");
+			logger?.debug(
+				`Opened file handle ${outFileHandle} for output file: ${destination}`,
+			);
 		}
 		processHeaderFileFn(outFileHandle);
 		for (let ndx = 0; ndx < files.length; ndx++) {
@@ -90,7 +110,7 @@ export async function combineDocumentation(
 			closeFn(outFileHandle);
 		}
 	} catch (error) {
-		logger.error(error);
+		logger?.error(error);
 		console.error(
 			"An error occurred while processing the Bruno files; see log for details",
 		);
@@ -131,12 +151,21 @@ export function getBruFiles(
 	sourcePath: string,
 	getFolderItemsFn = getFolderItems,
 ) {
+	logger?.debug(`Getting .bru files from ${sourcePath}`);
 	try {
-		const files = getFolderItemsFn(path.join(__dirname, "..", sourcePath));
-		return files.filter((file) => file.endsWith(".bru"));
+		const files = getFolderItemsFn(sourcePath);
+		logger?.debug(`Found ${files.length} items in ${sourcePath}`);
+		files.map((file) => logger?.debug(`- ${file}`));
+		const fileList = files.filter((file) => {
+			logger?.debug(`Checking file ${file}`);
+			return file.endsWith(".bru");
+		});
+		logger?.debug(`Found ${fileList.length} .bru files`);
+		fileList.map((file) => logger?.debug(`- ${file}`));
+		return fileList;
 	} catch (error) {
 		if (error instanceof Error) {
-			logger.warn(`Source path '${sourcePath}' does not exist`);
+			logger?.warn(`Source path '${sourcePath}' does not exist`);
 			process.exit(1);
 		}
 		throw error;
@@ -149,13 +178,29 @@ export function getBruFiles(
  * @param folderPath - The path to the folder to retrieve the file names from.
  * @returns An array of file names in the specified folder.
  */
+// TODO: make this recursive
 export function getFolderItems(folderPath: string): string[] {
+	logger?.debug(`Getting items from ${folderPath}`);
 	const folderEntities = readdirSync(folderPath, {
 		withFileTypes: true,
 	}) as Dirent[];
-	const fileNames = folderEntities
-		.filter((entity) => entity.isFile())
-		.map((file) => file.name);
+
+	let fileNames: string[] = [];
+
+	for (const entity of folderEntities) {
+		if (entity.isFile()) {
+			const fileWithPath = path.join(folderPath, entity.name);
+			logger?.debug(`- ${fileWithPath}`);
+			fileNames.push(fileWithPath);
+		} else if (entity.isDirectory()) {
+			const subFolderPath = path.join(folderPath, entity.name);
+			logger?.debug(`Recursively getting items from ${subFolderPath}`);
+			fileNames = fileNames.concat(getFolderItems(subFolderPath));
+		}
+	}
+
+	logger?.debug("The following files were found:");
+	fileNames.map((file) => logger?.debug(`- ${file}`));
 	return fileNames;
 }
 
@@ -183,7 +228,7 @@ export function getMetaData(
 	const config = validateConfigFn();
 	if (!metaData) {
 		if (!config.logOptions.silent)
-			logger.warn(
+			logger?.warn(
 				`${fileName}: Meta section is required to be a valid .bru file; skipping`,
 			);
 		return;
@@ -200,7 +245,7 @@ export function getMetaData(
 export function getEndpointName(metaData: string): string | undefined {
 	const name = metaData.match(/.*name:\s*(.*)/i);
 	if (!name || name[1] === "") {
-		logger.warn("A name is required to be a valid .bru file; skipping");
+		logger?.warn("A name is required to be a valid .bru file; skipping");
 		return;
 	}
 	return name[1];
@@ -236,14 +281,21 @@ export function processBruFile(
 ): void {
 	const config = validateConfigFn();
 	if (config.excludes?.includes(path.basename(fileName))) {
-		logger.verbose(`'${fileName}' is in the exclude list; skipping`);
+		logger?.verbose(`'${fileName}' is in the exclude list; skipping`);
 	} else {
-		logger.verbose(`Processing '${fileName}'`);
-		const endpointDocumentation = readBruFileDocContentFn(fileName);
-		if (endpointDocumentation) {
-			if (!globalThis.testMode) {
-				writeSyncFn(fileHandle, `${endpointDocumentation}`);
+		try {
+			logger?.verbose(`Processing '${fileName}'`);
+			const endpointDocumentation = readBruFileDocContentFn(fileName);
+			if (endpointDocumentation) {
+				if (!globalThis.testMode) {
+					writeSyncFn(fileHandle, `${endpointDocumentation}`);
+				}
 			}
+		} catch (error) {
+			if (error instanceof Error) {
+				logger?.error(`Error processing '${fileName}': ${error.message}`);
+			}
+			logger?.error(`Error processing '${fileName}': ${error}`);
 		}
 	}
 }
@@ -266,21 +318,26 @@ export function processHeaderFile(
 ): void {
 	const headerFile = validateConfigFn().header;
 	if (headerFile) {
-		logger.verbose(`Processing header file: ${headerFile}`);
+		logger?.verbose(
+			`Processing header file: ${path.join(process.cwd(), headerFile)}`,
+		);
 		if (existsSyncFn(headerFile)) {
-			const headerFileContent = readFileSyncFn(headerFile, "utf-8");
+			const headerFileContent = readFileSyncFn(
+				path.join(process.cwd(), headerFile),
+				"utf-8",
+			);
 			try {
 				if (!globalThis.testMode) {
 					writeSyncFn(fileHandle, `${headerFileContent}`);
 				}
 			} catch (error) {
-				logger.warn(`Error writing header to file: ${error}`);
+				logger?.warn(`Error writing header to file: ${error}`);
 			}
 		} else {
-			logger.warn(`Header file not found: ${headerFile}; skipping`);
+			logger?.warn(`Header file not found: ${headerFile}; skipping`);
 		}
 	} else {
-		logger.info("No header file specified");
+		logger?.verbose("No header file specified");
 	}
 }
 
@@ -302,23 +359,28 @@ export function processTailFile(
 ): void {
 	const tailFile = validateConfigFn().tail;
 	if (tailFile) {
-		logger.verbose(`Processing tail file: ${tailFile}`);
+		logger?.verbose(
+			`Processing tail file: ${path.join(process.cwd(), tailFile)}`,
+		);
 		if (existsSyncFn(tailFile)) {
-			const tailFileContent = readFileSyncFn(tailFile, "utf-8");
+			const tailFileContent = readFileSyncFn(
+				path.join(process.cwd(), tailFile),
+				"utf-8",
+			);
 			if (fileHandle) {
 				try {
 					if (!globalThis.testMode) {
 						writeSyncFn(fileHandle, `${tailFileContent}`);
 					}
 				} catch (error) {
-					logger.warn(`Error writing tail to file: ${error}`);
+					logger?.warn(`Error writing tail to file: ${error}`);
 				}
 			}
 		} else {
-			logger.warn(`Tail file not found: ${tailFile}; skipping`);
+			logger?.warn(`Tail file not found: ${tailFile}; skipping`);
 		}
 	} else {
-		logger.info("No tail file specified");
+		logger?.verbose("No tail file specified");
 	}
 }
 
@@ -360,6 +422,6 @@ export function readBruFileDocContent(
  */
 export function validateConfig(): Config {
 	if (globalThis.config) return globalThis.config;
-	logger.error("Config is not initialized");
+	logger?.error("Config is not initialized");
 	process.exit(1);
 }

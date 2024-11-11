@@ -7,11 +7,13 @@ export const configSchema = z
 				message: "If included, debug must be either 'true' or 'false'",
 			})
 			.optional(),
-		destination: z
-			.string()
-			.regex(/^(?:[a-zA-Z0-9_\-\/]+\/)*[a-zA-Z0-9_\-]+\.md$/, {
+		destination: z.string().regex(
+			// biome-ignore lint/suspicious/noControlCharactersInRegex: <explanation>
+			/^(?!\/)(?!.*\/\/)([^<>:"\\|?*\x00-\x1F\/]+\/)*[^<>:"\\|?*\x00-\x1F\/]*\.(md|markdown)$/,
+			{
 				message: "Destination must be a valid markdown file name",
-			}),
+			},
+		),
 		excludes: z
 			.array(
 				z.string().regex(/^(?:\.[a-zA-Z0-9_\-\/]+\/)*[a-zA-Z0-9_\-]+\.bru$/, {

@@ -56,28 +56,42 @@ function configFileExists(configFileName) {
 function combineDocumentation() {
     return __awaiter(this, arguments, void 0, function* (validateConfigFn = validateConfig, getBruFilesFn = getBruFiles, existsSyncFn = node_fs_1.existsSync, dirnameFn = node_path_1.default.dirname, mkdirSyncFn = node_fs_1.mkdirSync, openSyncFn = node_fs_1.openSync, processHeaderFileFn = processHeaderFile, processBruFileFn = processBruFile, processTailFileFn = processTailFile, closeFn = node_fs_1.close, confirmOverwriteDocsFn = inquirer_1.confirmOverwriteDocs, unlinkSyncFn = node_fs_1.unlinkSync) {
         const config = validateConfigFn();
+        const destination = node_path_1.default.join(process.cwd(), config.destination);
+        const source = node_path_1.default.join(process.cwd(), config.source);
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose(`Destination: ${destination}`);
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose(`Source: ${source}`);
         try {
-            const files = getBruFilesFn(config.source);
+            const files = getBruFilesFn(source);
             if (!files || files.length === 0) {
-                logger_1.logger.warn("No Bruno files found");
+                logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.warn("No Bruno files found");
                 return;
             }
+            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug("The following files will be combined:");
+            files.map((file) => logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug(`- ${file}`));
             let outFileHandle = 0;
             if (!globalThis.testMode) {
-                if ((existsSyncFn(config.destination) && config.force) ||
-                    config.logOptions.silent ||
-                    (yield confirmOverwriteDocsFn())) {
-                    unlinkSyncFn(config.destination);
-                }
-                else {
-                    logger_1.logger.info("User has chosen to not overwrite existing file");
-                    process.exit(1);
+                if (existsSyncFn(destination)) {
+                    logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose(`Documentation file already exists at ${destination}`);
+                    if (config.force || config.logOptions.silent) {
+                        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose(`${config.force ? "Force mode is enabled; " : ""} ${config.logOptions.silent ? "Silent mode is enabled; " : ""}overwriting existing file`);
+                        unlinkSyncFn(destination);
+                    }
+                    else {
+                        if (yield confirmOverwriteDocsFn()) {
+                            unlinkSyncFn(destination);
+                        }
+                        else {
+                            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.info("User has chosen to not overwrite existing file; exiting");
+                            process.exit(0);
+                        }
+                    }
                 }
             }
-            const dirName = dirnameFn(config.destination);
+            const dirName = dirnameFn(destination);
             if (!globalThis.testMode) {
                 mkdirSyncFn(dirName, { recursive: true });
-                outFileHandle = openSyncFn(config.destination, "w");
+                outFileHandle = openSyncFn(destination, "w");
+                logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug(`Opened file handle ${outFileHandle} for output file: ${destination}`);
             }
             processHeaderFileFn(outFileHandle);
             for (let ndx = 0; ndx < files.length; ndx++) {
@@ -91,7 +105,7 @@ function combineDocumentation() {
             }
         }
         catch (error) {
-            logger_1.logger.error(error);
+            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.error(error);
             console.error("An error occurred while processing the Bruno files; see log for details");
             process.exit(1);
         }
@@ -123,13 +137,22 @@ function exhaustiveSwitchGuard(value, message = `Unhandled value in switch state
  * // Output might be: ['test1.bru', 'test3.bru']
  */
 function getBruFiles(sourcePath, getFolderItemsFn = getFolderItems) {
+    logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug(`Getting .bru files from ${sourcePath}`);
     try {
-        const files = getFolderItemsFn(node_path_1.default.join(__dirname, "..", sourcePath));
-        return files.filter((file) => file.endsWith(".bru"));
+        const files = getFolderItemsFn(sourcePath);
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug(`Found ${files.length} items in ${sourcePath}`);
+        files.map((file) => logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug(`- ${file}`));
+        const fileList = files.filter((file) => {
+            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug(`Checking file ${file}`);
+            return file.endsWith(".bru");
+        });
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug(`Found ${fileList.length} .bru files`);
+        fileList.map((file) => logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug(`- ${file}`));
+        return fileList;
     }
     catch (error) {
         if (error instanceof Error) {
-            logger_1.logger.warn(`Source path '${sourcePath}' does not exist`);
+            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.warn(`Source path '${sourcePath}' does not exist`);
             process.exit(1);
         }
         throw error;
@@ -141,13 +164,27 @@ function getBruFiles(sourcePath, getFolderItemsFn = getFolderItems) {
  * @param folderPath - The path to the folder to retrieve the file names from.
  * @returns An array of file names in the specified folder.
  */
+// TODO: make this recursive
 function getFolderItems(folderPath) {
+    logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug(`Getting items from ${folderPath}`);
     const folderEntities = (0, node_fs_1.readdirSync)(folderPath, {
         withFileTypes: true,
     });
-    const fileNames = folderEntities
-        .filter((entity) => entity.isFile())
-        .map((file) => file.name);
+    let fileNames = [];
+    for (const entity of folderEntities) {
+        if (entity.isFile()) {
+            const fileWithPath = node_path_1.default.join(folderPath, entity.name);
+            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug(`- ${fileWithPath}`);
+            fileNames.push(fileWithPath);
+        }
+        else if (entity.isDirectory()) {
+            const subFolderPath = node_path_1.default.join(folderPath, entity.name);
+            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug(`Recursively getting items from ${subFolderPath}`);
+            fileNames = fileNames.concat(getFolderItems(subFolderPath));
+        }
+    }
+    logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug("The following files were found:");
+    fileNames.map((file) => logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug(`- ${file}`));
     return fileNames;
 }
 /**
@@ -170,7 +207,7 @@ function getMetaData(fileContent, fileName, validateConfigFn = validateConfig) {
     const config = validateConfigFn();
     if (!metaData) {
         if (!config.logOptions.silent)
-            logger_1.logger.warn(`${fileName}: Meta section is required to be a valid .bru file; skipping`);
+            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.warn(`${fileName}: Meta section is required to be a valid .bru file; skipping`);
         return;
     }
     return metaData[1];
@@ -184,7 +221,7 @@ function getMetaData(fileContent, fileName, validateConfigFn = validateConfig) {
 function getEndpointName(metaData) {
     const name = metaData.match(/.*name:\s*(.*)/i);
     if (!name || name[1] === "") {
-        logger_1.logger.warn("A name is required to be a valid .bru file; skipping");
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.warn("A name is required to be a valid .bru file; skipping");
         return;
     }
     return name[1];
@@ -213,15 +250,23 @@ function processBruFile(fileName, fileHandle, validateConfigFn = validateConfig,
     var _a;
     const config = validateConfigFn();
     if ((_a = config.excludes) === null || _a === void 0 ? void 0 : _a.includes(node_path_1.default.basename(fileName))) {
-        logger_1.logger.verbose(`'${fileName}' is in the exclude list; skipping`);
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose(`'${fileName}' is in the exclude list; skipping`);
     }
     else {
-        logger_1.logger.verbose(`Processing '${fileName}'`);
-        const endpointDocumentation = readBruFileDocContentFn(fileName);
-        if (endpointDocumentation) {
-            if (!globalThis.testMode) {
-                writeSyncFn(fileHandle, `${endpointDocumentation}`);
+        try {
+            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose(`Processing '${fileName}'`);
+            const endpointDocumentation = readBruFileDocContentFn(fileName);
+            if (endpointDocumentation) {
+                if (!globalThis.testMode) {
+                    writeSyncFn(fileHandle, `${endpointDocumentation}`);
+                }
             }
+        }
+        catch (error) {
+            if (error instanceof Error) {
+                logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.error(`Error processing '${fileName}': ${error.message}`);
+            }
+            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.error(`Error processing '${fileName}': ${error}`);
         }
     }
 }
@@ -237,24 +282,24 @@ function processBruFile(fileName, fileHandle, validateConfigFn = validateConfig,
 function processHeaderFile(fileHandle, validateConfigFn = validateConfig, existsSyncFn = node_fs_1.existsSync, readFileSyncFn = node_fs_1.readFileSync, writeSyncFn = node_fs_1.writeSync) {
     const headerFile = validateConfigFn().header;
     if (headerFile) {
-        logger_1.logger.verbose(`Processing header file: ${headerFile}`);
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose(`Processing header file: ${node_path_1.default.join(process.cwd(), headerFile)}`);
         if (existsSyncFn(headerFile)) {
-            const headerFileContent = readFileSyncFn(headerFile, "utf-8");
+            const headerFileContent = readFileSyncFn(node_path_1.default.join(process.cwd(), headerFile), "utf-8");
             try {
                 if (!globalThis.testMode) {
                     writeSyncFn(fileHandle, `${headerFileContent}`);
                 }
             }
             catch (error) {
-                logger_1.logger.warn(`Error writing header to file: ${error}`);
+                logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.warn(`Error writing header to file: ${error}`);
             }
         }
         else {
-            logger_1.logger.warn(`Header file not found: ${headerFile}; skipping`);
+            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.warn(`Header file not found: ${headerFile}; skipping`);
         }
     }
     else {
-        logger_1.logger.info("No header file specified");
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose("No header file specified");
     }
 }
 /**
@@ -269,9 +314,9 @@ function processHeaderFile(fileHandle, validateConfigFn = validateConfig, exists
 function processTailFile(fileHandle, validateConfigFn = validateConfig, existsSyncFn = node_fs_1.existsSync, readFileSyncFn = node_fs_1.readFileSync, writeSyncFn = node_fs_1.writeSync) {
     const tailFile = validateConfigFn().tail;
     if (tailFile) {
-        logger_1.logger.verbose(`Processing tail file: ${tailFile}`);
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose(`Processing tail file: ${node_path_1.default.join(process.cwd(), tailFile)}`);
         if (existsSyncFn(tailFile)) {
-            const tailFileContent = readFileSyncFn(tailFile, "utf-8");
+            const tailFileContent = readFileSyncFn(node_path_1.default.join(process.cwd(), tailFile), "utf-8");
             if (fileHandle) {
                 try {
                     if (!globalThis.testMode) {
@@ -279,16 +324,16 @@ function processTailFile(fileHandle, validateConfigFn = validateConfig, existsSy
                     }
                 }
                 catch (error) {
-                    logger_1.logger.warn(`Error writing tail to file: ${error}`);
+                    logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.warn(`Error writing tail to file: ${error}`);
                 }
             }
         }
         else {
-            logger_1.logger.warn(`Tail file not found: ${tailFile}; skipping`);
+            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.warn(`Tail file not found: ${tailFile}; skipping`);
         }
     }
     else {
-        logger_1.logger.info("No tail file specified");
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose("No tail file specified");
     }
 }
 /**
@@ -324,7 +369,7 @@ function readBruFileDocContent(fileName, readFileSyncFn = node_fs_1.readFileSync
 function validateConfig() {
     if (globalThis.config)
         return globalThis.config;
-    logger_1.logger.error("Config is not initialized");
+    logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.error("Config is not initialized");
     process.exit(1);
 }
 //# sourceMappingURL=utils.js.map

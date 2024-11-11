@@ -32,7 +32,7 @@ function confirmBuild() {
             message: "Test completed.  Do you want to build the documentation?",
             default: true,
         });
-        logger_1.logger.verbose(`User provided build confirmation: ${answer}`);
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose(`User provided build confirmation: ${answer}`);
         return answer;
     });
 }
@@ -42,7 +42,7 @@ function confirmOverwriteDocs() {
             message: "A documentation file already exists.  Do you want to overwrite it and create a new set of documentation?",
             default: true,
         });
-        logger_1.logger.verbose(`User provided documentation overwrite confirmation: ${answer}`);
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose(`User provided documentation overwrite confirmation: ${answer}`);
         return answer;
     });
 }
@@ -66,7 +66,7 @@ function destination() {
                 return "Invalid file path. Please enter a valid file name ending in .md";
             },
         });
-        logger_1.logger.verbose(`User provided destination: ${answer}`);
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose(`User provided destination: ${answer}`);
         return answer;
     });
 }
@@ -81,7 +81,7 @@ function saveConfig() {
             message: "Do you want to save these options to the configuration file for future use?  This will overwrite any existing configuration options.",
             default: true,
         });
-        logger_1.logger.verbose(`User provided save config: ${answer}`);
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose(`User provided save config: ${answer}`);
         return answer;
     });
 }
@@ -104,7 +104,7 @@ function source() {
                 return "Invalid file path. Please enter a valid file path.";
             },
         });
-        logger_1.logger.verbose(`User provided source: ${answer}`);
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose(`User provided source: ${answer}`);
         return answer;
     });
 }
@@ -128,7 +128,7 @@ function testMode() {
                 },
             ],
         });
-        logger_1.logger.verbose(`User provided test mode: ${answer}`);
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose(`User provided test mode: ${answer}`);
         return answer;
     });
 }

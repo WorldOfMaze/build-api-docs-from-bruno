@@ -1,6 +1,4 @@
-# Introduction
 
-This is an introduction to the documentation for this API.
 # Get Session Token
 
 This endpoint is not documented.
@@ -112,6 +110,3 @@ This endpoint is not documented.
 # By project ID
 
 This endpoint is not documented.
-# Epilogue
-
-This is end material that goes at the end of the documentation for this API.

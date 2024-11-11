@@ -1,10 +1,5 @@
 import _ from "lodash";
-import {
-	existsSync,
-	promises as fs,
-	readFileSync,
-	writeFileSync,
-} from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import type { Config } from "../types";
 import { DEFAULT_DEFAULT_CONFIG_FILE_NAME } from "./constants";
@@ -72,44 +67,47 @@ export function overrideKeysFromCLI(
 export function readConfigFile(fileName: string): Config {
 	const configFileName = String(fileName);
 	const configFileNameWithPath = path.join(
-		path.dirname(String(process.argv[1])),
+		path.dirname(process.cwd()),
 		"..",
 		configFileName,
 	);
 
-	logger.debug(`Requested config file is '${configFileNameWithPath}'.`);
+	logger?.debug(`Requested config file is '${configFileNameWithPath}'.`);
 	let configData: Config | null = null;
 
 	if (existsSync(configFileNameWithPath)) {
-		logger.debug("File exists; reading...");
+		logger?.debug("File exists; reading...");
 		try {
-			logger.info(`Reading config file: '${configFileNameWithPath}'.`);
-			configData = JSON.parse(readFileSync(configFileName, "utf-8"));
+			logger?.info(`Reading config file: '${configFileNameWithPath}'.`);
+			configData = JSON.parse(readFileSync(configFileNameWithPath, "utf-8"));
 		} catch (error) {
-			logger.error(error);
-			logger.warn("Error reading config file; see process.log for details.");
+			logger?.error(error);
+			logger?.warn("Error reading config file; see process.log for details.");
 			process.exit(1);
 		}
 	} else {
-		logger.debug("File does not existing; trying default.");
+		logger?.debug("File does not existing; trying default.");
 		try {
-			logger.debug(
-				`Reading default config file: '${DEFAULT_DEFAULT_CONFIG_FILE_NAME}'.`,
+			logger?.debug(
+				`Reading default config file: '${path.join(__dirname, "..", DEFAULT_DEFAULT_CONFIG_FILE_NAME)}'.`,
 			);
 			configData = JSON.parse(
-				readFileSync(DEFAULT_DEFAULT_CONFIG_FILE_NAME, "utf-8"),
+				readFileSync(
+					path.join(__dirname, "..", DEFAULT_DEFAULT_CONFIG_FILE_NAME),
+					"utf-8",
+				),
 			);
 		} catch (error) {
-			logger.error(error);
-			logger.warn("Error reading config file; see process.log for details.");
+			logger?.error(error);
+			logger?.warn("Error reading config file; see process.log for details.");
 			process.exit(1);
 		}
 	}
-	logger.verbose(`Config is:\n${JSON.stringify(configData, null, 2)}`);
-	logger.debug("Returning configuration data.");
+	logger?.verbose(`Config is:\n${JSON.stringify(configData, null, 2)}`);
+	logger?.debug("Returning configuration data.");
 	if (configData) return configData;
 
-	logger.error("Problem reading config file.");
+	logger?.error("Problem reading config file.");
 	process.exit(1);
 }
 
@@ -125,7 +123,7 @@ export function readConfigFile(fileName: string): Config {
 export async function saveConfigToFile(argv: {
 	[key: string]: unknown;
 }): Promise<void> {
-	const configFile = String(argv["config-file"]);
+	const configFile = path.join(process.cwd(), String(argv["config-file"]));
 	let configData = globalThis.config;
 
 	// Read existing config file if it exists
@@ -142,20 +140,21 @@ export async function saveConfigToFile(argv: {
 			configData = { ...existingConfig, ...configData };
 		} catch (err) {
 			// console.log("ERROR", err);
-			logger.error(`Problem reading '${configFile}';  aborting!`);
+			logger?.error(`Problem reading '${configFile}';  aborting!`);
 			throw err;
 		}
 	}
 	// Save configuration data to file
 	if (await saveConfig()) {
+		logger?.verbose(`Writing config file to '${configFile}'`);
 		try {
 			writeFileSync(configFile, JSON.stringify(configData, null, 2), "utf8");
-			logger.info("Configuration file updated!");
-			logger.verbose(JSON.stringify(configData, null, 2));
+			logger?.verbose("Configuration file updated!");
+			logger?.verbose(JSON.stringify(configData, null, 2));
 		} catch (err) {
 			console.error({ err });
-			logger.error(`Error saving configuration file to '${configFile}'`);
-			logger.error(err);
+			logger?.error(`Error saving configuration file to '${configFile}'`);
+			logger?.error(err);
 			throw err;
 		}
 	}
@@ -190,40 +189,24 @@ export function validateConfig(config: unknown): void {
 		const errors = res.error.errors;
 		errors.map((error) => {
 			if (error.code === "unrecognized_keys") {
-				logger.warn(`${error.message}: ${error.keys.join()}; ignoring`);
+				logger?.warn(`${error.message}: ${error.keys.join()}; ignoring`);
 			} else if (error.code === "invalid_type") {
-				logger.error(`${error.path} is ${error.message.toLowerCase()}`);
+				logger?.error(`${error.path} is ${error.message.toLowerCase()}`);
 				configOk = false;
 			} else {
-				logger.error(error);
+				logger?.error(error);
 				configOk = false;
 			}
 		});
 	}
 	const validConfig = config as Config;
 	if (validConfig.logOptions.verbose && validConfig.logOptions.silent) {
-		logger.warn("Verbose and silent are mutually exclusive; ignoring both.");
+		logger?.warn("Verbose and silent are mutually exclusive; ignoring both.");
 		validConfig.logOptions.verbose = false;
 		validConfig.logOptions.silent = false;
 	}
 	if (!configOk) {
 		console.log("Error validating config file; see process.log for details");
 		process.exit(1);
-	}
-}
-
-export async function writeConfigFile(argv: {
-	[key: string]: unknown;
-}) {
-	const configFile = String(argv["config-file"]);
-	const configData = globalThis.config;
-	try {
-		await fs.writeFile(configFile, JSON.stringify(configData, null, 2), "utf8");
-		logger.info("Configuration file updated!");
-		logger.verbose(JSON.stringify(configData, null, 2));
-	} catch (err) {
-		logger.error(`Error saving configuration file to '${configFile}'`);
-		logger.error(err);
-		throw err;
 	}
 }

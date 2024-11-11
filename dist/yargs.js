@@ -130,19 +130,19 @@ exports.buildCommand = {
         if (argv.debug) {
             (0, logger_1.setLogLevel)("debug");
         }
-        logger_1.logger.debug("Loading configuration...");
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug("Loading configuration...");
         (0, config_1.default)(argv);
-        logger_1.logger.debug("Successfully loaded configuration.");
-        logger_1.logger.info("Executing 'go' command...");
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug("Successfully loaded configuration.");
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.info("Executing 'go' command...");
         if (!globalThis.config) {
-            logger_1.logger.error("\nInvalid configuration file; aborting.");
+            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.error("\nInvalid configuration file; aborting.");
             process.exit(0);
         }
         // globalThis.config.source = await source();
         // globalThis.config.destination = await destination();
         // globalThis.testMode = await testMode();
         if (argv.test) {
-            logger_1.logger.warn("Test mode not support in unattended more; skipping.");
+            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.warn("Test mode not support in unattended more; skipping.");
         }
         // if (globalThis.testMode) {
         // 	logger.info("Testing build process\n");
@@ -159,13 +159,13 @@ exports.buildCommand = {
         // 	globalThis.buildMode = true;
         // }
         // if (globalThis.buildMode) {
-        logger_1.logger.info("Executing build process");
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.info("Executing build process");
         yield (0, utils_1.combineDocumentation)();
         // }
         if (argv.saveConfig) {
         }
         // await saveConfigToFile(argv);
-        logger_1.logger.info("Done!");
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose("Done!");
         return;
     }),
 };
@@ -182,27 +182,27 @@ exports.guidedCommand = {
         if (argv.debug) {
             (0, logger_1.setLogLevel)("debug");
         }
-        logger_1.logger.debug("Loading configuration...");
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug("Loading configuration...");
         (0, config_1.default)(argv);
-        logger_1.logger.debug("Successfully loaded configuration.");
-        logger_1.logger.info("Executing 'guided' command...");
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.debug("Successfully loaded configuration.");
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose("Executing 'guided' command...");
         if (!globalThis.config) {
-            logger_1.logger.error("\nInvalid configuration file; aborting.");
+            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.error("\nInvalid configuration file; aborting.");
             process.exit(0);
         }
         globalThis.config.source = yield (0, inquirer_1.source)();
         globalThis.config.destination = yield (0, inquirer_1.destination)();
         globalThis.testMode = yield (0, inquirer_1.testMode)();
         if (globalThis.testMode) {
-            logger_1.logger.info("Testing build process\n");
+            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.info("Testing build process\n");
             try {
                 yield (0, utils_1.combineDocumentation)();
-                logger_1.logger.verbose("Test complete.");
+                logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose("Test complete.");
                 globalThis.testMode = false;
                 globalThis.buildMode = yield (0, inquirer_1.confirmBuild)();
             }
             catch (error) {
-                logger_1.logger.error(error);
+                logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.error(error);
                 process.exit(1);
             }
         }
@@ -210,11 +210,11 @@ exports.guidedCommand = {
             globalThis.buildMode = true;
         }
         if (globalThis.buildMode) {
-            logger_1.logger.info("Executing build process");
+            logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose("Executing build process");
             yield (0, utils_1.combineDocumentation)();
         }
         yield (0, config_1.saveConfigToFile)(argv);
-        logger_1.logger.info("Done!");
+        logger_1.logger === null || logger_1.logger === void 0 ? void 0 : logger_1.logger.verbose("Done!");
         return;
     }),
 };

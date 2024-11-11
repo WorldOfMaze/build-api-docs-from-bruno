@@ -12,7 +12,7 @@ export async function confirmBuild(): Promise<boolean> {
 		message: "Test completed.  Do you want to build the documentation?",
 		default: true,
 	});
-	logger.verbose(`User provided build confirmation: ${answer}`);
+	logger?.verbose(`User provided build confirmation: ${answer}`);
 	return answer;
 }
 
@@ -22,7 +22,7 @@ export async function confirmOverwriteDocs(): Promise<boolean> {
 			"A documentation file already exists.  Do you want to overwrite it and create a new set of documentation?",
 		default: true,
 	});
-	logger.verbose(
+	logger?.verbose(
 		`User provided documentation overwrite confirmation: ${answer}`,
 	);
 	return answer;
@@ -47,7 +47,7 @@ export async function destination(): Promise<string> {
 			return "Invalid file path. Please enter a valid file name ending in .md";
 		},
 	});
-	logger.verbose(`User provided destination: ${answer}`);
+	logger?.verbose(`User provided destination: ${answer}`);
 	return answer;
 }
 
@@ -62,7 +62,7 @@ export async function saveConfig(): Promise<boolean> {
 			"Do you want to save these options to the configuration file for future use?  This will overwrite any existing configuration options.",
 		default: true,
 	});
-	logger.verbose(`User provided save config: ${answer}`);
+	logger?.verbose(`User provided save config: ${answer}`);
 	return answer;
 }
 
@@ -84,7 +84,7 @@ export async function source(): Promise<string> {
 			return "Invalid file path. Please enter a valid file path.";
 		},
 	});
-	logger.verbose(`User provided source: ${answer}`);
+	logger?.verbose(`User provided source: ${answer}`);
 	return answer;
 }
 
@@ -107,6 +107,6 @@ export async function testMode(): Promise<boolean> {
 			},
 		],
 	});
-	logger.verbose(`User provided test mode: ${answer}`);
+	logger?.verbose(`User provided test mode: ${answer}`);
 	return answer;
 }

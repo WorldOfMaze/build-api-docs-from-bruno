@@ -101,13 +101,13 @@ export const buildCommand: CommandModule<unknown, BuildCommandArgs> = {
 		if (argv.debug) {
 			setLogLevel("debug");
 		}
-		logger.debug("Loading configuration...");
+		logger?.debug("Loading configuration...");
 		loadConfig(argv);
-		logger.debug("Successfully loaded configuration.");
+		logger?.debug("Successfully loaded configuration.");
 
-		logger.info("Executing 'go' command...");
+		logger?.info("Executing 'go' command...");
 		if (!globalThis.config) {
-			logger.error("\nInvalid configuration file; aborting.");
+			logger?.error("\nInvalid configuration file; aborting.");
 			process.exit(0);
 		}
 
@@ -115,7 +115,7 @@ export const buildCommand: CommandModule<unknown, BuildCommandArgs> = {
 		// globalThis.config.destination = await destination();
 		// globalThis.testMode = await testMode();
 		if (argv.test) {
-			logger.warn("Test mode not support in unattended more; skipping.");
+			logger?.warn("Test mode not support in unattended more; skipping.");
 		}
 
 		// if (globalThis.testMode) {
@@ -134,7 +134,7 @@ export const buildCommand: CommandModule<unknown, BuildCommandArgs> = {
 		// }
 
 		// if (globalThis.buildMode) {
-		logger.info("Executing build process");
+		logger?.info("Executing build process");
 		await combineDocumentation();
 		// }
 
@@ -142,7 +142,7 @@ export const buildCommand: CommandModule<unknown, BuildCommandArgs> = {
 		}
 		// await saveConfigToFile(argv);
 
-		logger.info("Done!");
+		logger?.verbose("Done!");
 		return;
 	},
 };
@@ -160,13 +160,13 @@ export const guidedCommand: CommandModule<unknown, GuidedCommandArgs> = {
 		if (argv.debug) {
 			setLogLevel("debug");
 		}
-		logger.debug("Loading configuration...");
+		logger?.debug("Loading configuration...");
 		loadConfig(argv);
-		logger.debug("Successfully loaded configuration.");
+		logger?.debug("Successfully loaded configuration.");
 
-		logger.info("Executing 'guided' command...");
+		logger?.verbose("Executing 'guided' command...");
 		if (!globalThis.config) {
-			logger.error("\nInvalid configuration file; aborting.");
+			logger?.error("\nInvalid configuration file; aborting.");
 			process.exit(0);
 		}
 
@@ -175,14 +175,14 @@ export const guidedCommand: CommandModule<unknown, GuidedCommandArgs> = {
 		globalThis.testMode = await testMode();
 
 		if (globalThis.testMode) {
-			logger.info("Testing build process\n");
+			logger?.info("Testing build process\n");
 			try {
 				await combineDocumentation();
-				logger.verbose("Test complete.");
+				logger?.verbose("Test complete.");
 				globalThis.testMode = false;
 				globalThis.buildMode = await confirmBuild();
 			} catch (error) {
-				logger.error(error);
+				logger?.error(error);
 				process.exit(1);
 			}
 		} else {
@@ -190,13 +190,13 @@ export const guidedCommand: CommandModule<unknown, GuidedCommandArgs> = {
 		}
 
 		if (globalThis.buildMode) {
-			logger.info("Executing build process");
+			logger?.verbose("Executing build process");
 			await combineDocumentation();
 		}
 
 		await saveConfigToFile(argv);
 
-		logger.info("Done!");
+		logger?.verbose("Done!");
 		return;
 	},
 };
